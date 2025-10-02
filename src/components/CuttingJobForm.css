@@ -1,0 +1,232 @@
+/* src/components/CuttingJobForm.css */
+
+/* Основний контейнер та типографія */
+.job-form-container {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 30px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: black;
+}
+
+h1 {
+    color: #004d99;
+    text-align: center;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 10px;
+}
+
+h2 {
+    color: #333;
+    font-size: 1.3em;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    padding-left: 10px;
+    border-left: 4px solid #007bff;
+}
+
+/* Секція введення даних */
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+    font-size: 0.95em;
+}
+
+input[type="date"], input[type="number"], input[type="text"], select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 4px;
+    /* Зняти margin-bottom тут, щоб контролювати його через обгортку */
+    margin-bottom: 0; 
+    border: 1px solid #c0c0c0;
+    border-radius: 6px;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+}
+
+textarea {
+    resize: vertical;
+    margin-bottom: 15px; /* Залишаємо для не-Flex полів */
+}
+
+/* Рядок для додавання артикулів (Flexbox) */
+.input-row {
+    display: flex;
+    gap: 20px;
+    align-items: flex-end; /* Вирівнює всі елементи по нижньому краю */
+    margin-bottom: 20px;
+}
+
+/* Контейнер для поля пошуку та кнопки "Змінити" + Autocomplete */
+.search-input-wrapper {
+    position: relative;
+    flex: 1.5; /* Даємо більше місця для поля пошуку */
+    min-width: 250px;
+}
+
+.search-input-wrapper label {
+    margin-bottom: 0; /* Скидаємо для вирівнювання */
+}
+.search-input-wrapper input[type="text"] {
+    margin-bottom: 15px; /* Додаємо margin для відділення від інших елементів, якщо вони є */
+}
+
+/* Поле кількості */
+.input-row > label {
+    flex: 0.5; /* Даємо менше місця для кількості */
+    min-width: 100px;
+    margin-bottom: 0; 
+}
+.input-row > label input[type="number"] {
+    margin-bottom: 15px;
+}
+
+
+/* Стилізація кнопок */
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s, opacity 0.3s;
+    white-space: nowrap;
+}
+
+.add-button {
+    background-color: #28a745;
+    color: white;
+    min-width: 150px;
+    margin-bottom: 15px; /* Вирівнюємо по низу дорівнюючи інпутам */
+}
+
+.add-button:hover:not(:disabled) {
+    background-color: #218838;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 30px;
+    background-color: #007bff;
+    color: white;
+    font-size: 1.1em;
+}
+
+/* Стилізація кнопки "Змінити" (в основній формі) */
+.remove-selection-button {
+    position: absolute;
+    bottom: 18%;
+    right: 1px; 
+    padding: 4px 8px; /* Зробити її меншою */
+    font-size: 0.8em;
+    background-color: #e0e0e0;
+    color: #333;
+    border-radius: 4px;
+    z-index: 10;
+    line-height: 1;
+    border: 1px solid #ccc;
+}
+
+.remove-selection-button:hover {
+    background-color: #ccc;
+}
+
+
+/* Стилі для Autocomplete (Пошук артикулів) */
+.autocomplete-dropdown {
+    position: absolute;
+    top: 100%; 
+    left: 0;
+    z-index: 20; 
+    width: 100%; 
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #007bff;
+    background-color: white;
+    border-radius: 6px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    /* Компенсуємо відступ input */
+    transform: translateY(-15px); 
+}
+
+/* ... (Стилі autocomplete-item та article-info - без змін) ... */
+
+/* Стиль для кнопки створення нового артикула (в основній формі) */
+.search-no-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 20;
+    width: 100%;
+    padding: 10px;
+    background-color: #fff3cd; 
+    border: 1px solid #ffc107;
+    border-radius: 6px;
+    transform: translateY(-15px); /* Компенсуємо відступ input */
+    text-align: center;
+}
+
+.create-new-button {
+    background-color: #ffc107; 
+    color: #343a40;
+    padding: 8px 15px;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+/* --- Модальне вікно --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end; /* Вирівнюємо кнопки праворуч */
+    margin-top: 25px;
+    gap: 10px;
+}
+
+.modal-actions button {
+    width: auto;
+    min-width: 120px;
+}
+
+.cancel-button {
+    background-color: #6c757d;
+    color: white;
+}
+
+.cancel-button:hover {
+    background-color: #5a6268;
+}

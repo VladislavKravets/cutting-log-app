@@ -1,0 +1,109 @@
+/* * Базові стилі для основного контейнера та нової навігації
+ * Використовує фірмовий стиль (Indigo, заокруглення, світлий фон)
+ */
+
+.App {
+  text-align: center;
+  min-height: 100vh;
+  background-color: #4B5563; /* Дуже світлий сірий фон */
+  font-family: 'Inter', sans-serif;
+}
+
+/* ----------------------------------------------------------------
+   Стилізація Хедера та Навігації
+---------------------------------------------------------------- */
+
+header {
+  background-color: #ffffff;
+  box-shadow: 1px 4px 12px rgba(0, 0, 0, 0.08); /* Більш виразна тінь */
+  /* position: sticky; */
+  top: 0;
+  z-index: 50;
+  /* border-bottom: 1px solid #E5E7EB; */
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between; /* Розділяє логотип та навігацію */
+  align-items: center;
+  padding: 10px 20px;
+}
+
+.app-logo {
+  font-size: 1.8em;
+  font-weight: 800;
+  color: #4F46E5; /* Фірмовий індиго */
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.app-navigation {
+  display: flex;
+  justify-content: flex-start; /* Вирівнювання вправо */
+  align-items: center;
+  padding-left: 10%;
+}
+
+.nav-button {
+  padding: 12px 20px; /* Більший відступ */
+  margin: 0 5px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95em;
+  color: #4B5563;
+  background-color: transparent;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.nav-button:hover {
+  color: #3730A3; /* Темніший індиго на hover */
+  background-color: #F3F4F6; /* Світло-сірий фон на hover */
+}
+
+.nav-button.active {
+  color: #4F46E5; /* Індиго */
+  border-bottom: 3px solid #4F46E5;
+  background-color: #EEF2FF; /* Дуже світлий фон для активної вкладки */
+}
+
+/* ----------------------------------------------------------------
+   Стилізація Основного Вмісту
+---------------------------------------------------------------- */
+
+.App-content {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Адаптивність */
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    align-items: flex-start;
+    padding-bottom: 10px;
+  }
+
+  .app-logo {
+    margin-bottom: 10px;
+  }
+  
+  .app-navigation {
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .nav-button {
+    flex-grow: 1;
+    margin: 0 2px;
+    justify-content: center;
+  }
+}

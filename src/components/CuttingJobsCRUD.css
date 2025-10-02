@@ -1,0 +1,589 @@
+/* CuttingJobsCRUD.css */
+.cutting-jobs-crud {
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+}
+
+.crud-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.crud-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.create-button {
+  padding: 10px 20px;
+  background-color: #409eff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.create-button:hover {
+  background-color: #337ecc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+}
+
+.search-container {
+  margin-bottom: 16px;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px 16px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background-color: white;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #409eff;
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1);
+}
+
+.found-info {
+  color: #606266;
+  font-size: 14px;
+  margin-bottom: 16px;
+  padding: 8px 0;
+}
+
+/* Модальне вікно */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-content h2 {
+  margin: 0 0 20px 0;
+  color: #2c3e50;
+  font-size: 20px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #606266;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #409eff;
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.save-button {
+  padding: 10px 20px;
+  background-color: #67c23a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.save-button:hover {
+  background-color: #5daf34;
+}
+
+.cancel-button {
+  padding: 10px 20px;
+  background-color: #f5f7fa;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  color: #606266;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.cancel-button:hover {
+  background-color: #ecf5ff;
+  border-color: #c6e2ff;
+  color: #409eff;
+}
+
+/* Таблиця */
+.table-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.jobs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.jobs-table th {
+  background-color: #f8f9fa;
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 1px solid #e0e6ed;
+}
+
+.jobs-table td {
+  padding: 16px 12px;
+  border-bottom: 1px solid #f0f2f5;
+  color: #606266;
+}
+
+.jobs-table tr:last-child td {
+  border-bottom: none;
+}
+
+.jobs-table tr:hover td {
+  background-color: #f8fafc;
+}
+
+/* Статуси */
+.status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-Вчерзі {
+  background-color: #fdf6ec;
+  color: #e6a23c;
+}
+
+.status-Вроботі {
+  background-color: #ecf5ff;
+  color: #409eff;
+}
+
+.status-Виконано {
+  background-color: #f0f9eb;
+  color: #67c23a;
+}
+
+.status-Скасовано {
+  background-color: #fef0f0;
+  color: #f56c6c;
+}
+
+/* Дії */
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-btn {
+  padding: 6px 12px;
+  background-color: #ecf5ff;
+  color: #409eff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.edit-btn:hover {
+  background-color: #409eff;
+  color: white;
+}
+
+.delete-btn {
+  padding: 6px 12px;
+  background-color: #fef0f0;
+  color: #f56c6c;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+  background-color: #f56c6c;
+  color: white;
+}
+
+.details-btn {
+  padding: 6px 12px;
+  background-color: #f0f9eb;
+  color: #67c23a;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.details-btn:hover {
+  background-color: #67c23a;
+  color: white;
+}
+
+/* Деталі завдання */
+.details-row {
+  background-color: #fafbfc !important;
+}
+
+.job-details-section {
+  padding: 16px;
+  background-color: #f8fafc;
+  border-radius: 6px;
+  margin: 8px 0;
+}
+
+.job-details-section h4 {
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.add-article-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  align-items: center;
+  /* flex-wrap: wrap; */
+}
+
+.add-article-form select,
+.add-article-form input {
+  padding: 8px 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.add-article-form select {
+  min-width: 200px;
+}
+
+.add-article-form input {
+  width: 100px;
+}
+
+.add-btn {
+  padding: 8px 16px;
+  background-color: #409eff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.add-btn:hover {
+  background-color: #337ecc;
+}
+
+.articles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.article-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: white;
+  border-radius: 4px;
+  border: 1px solid #e0e6ed;
+}
+
+.article-name {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.article-quantity {
+  color: #606266;
+}
+
+.remove-btn {
+  padding: 4px 8px;
+  background-color: #fef0f0;
+  color: #f56c6c;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.remove-btn:hover {
+  background-color: #f56c6c;
+  color: white;
+}
+
+/* Завантаження */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 16px;
+  color: #606266;
+}
+
+/* Адаптивність */
+@media (max-width: 768px) {
+  .cutting-jobs-crud {
+    padding: 12px;
+  }
+  
+  .crud-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .actions {
+    flex-direction: column;
+  }
+  
+  .add-article-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .add-article-form select,
+  .add-article-form input {
+    width: 100%;
+  }
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.quantity-controls span {
+    color: #606266;
+    font-size: 12px;
+}
+
+.quantity-input {
+    width: 80px;
+    padding: 4px 8px;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.quantity-input:focus {
+    outline: none;
+    border-color: #409eff;
+    box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1);
+}
+
+.articles-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.article-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background-color: white;
+    border-radius: 8px;
+    border: 1px solid #e0e6ed;
+    transition: all 0.3s ease;
+    gap: 16px;
+}
+
+.article-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-color: #c6e2ff;
+}
+
+.article-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+.article-name {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 14px;
+}
+
+.article-specs {
+    color: #606266;
+    font-size: 12px;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 150px;
+}
+
+.quantity-controls span {
+    color: #606266;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.quantity-input {
+    width: 80px;
+    padding: 8px 10px;
+    border: 1px solid #dcdfe6;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.quantity-input:focus {
+    outline: none;
+    border-color: #409eff;
+    box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1);
+}
+
+.quantity-input:hover {
+    border-color: #c0c4cc;
+}
+
+.remove-btn {
+    padding: 8px 16px;
+    background-color: #fef0f0;
+    color: #f56c6c;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    min-width: 80px;
+}
+
+.remove-btn:hover {
+    background-color: #f56c6c;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.no-articles {
+    text-align: center;
+    color: #909399;
+    font-style: italic;
+    padding: 40px 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px dashed #dcdfe6;
+}
+
+/* Адаптивність для мобільних пристроїв */
+@media (max-width: 768px) {
+    .article-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .quantity-controls {
+        justify-content: space-between;
+        min-width: auto;
+    }
+    
+    .remove-btn {
+        width: 100%;
+    }
+}
+
+.article-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background-color: white;
+    border-radius: 6px;
+    border: 1px solid #e0e6ed;
+    transition: all 0.3s ease;
+    gap: 16px;
+}
+
+.article-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}

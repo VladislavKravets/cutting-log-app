@@ -1,0 +1,292 @@
+/* ArticlesManagement.css */
+
+.articles-management {
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+}
+
+/* Стилі для заголовка та пошуку */
+.articles-header {
+  margin-bottom: 24px;
+}
+
+.articles-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 16px;
+}
+
+.search-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.search-input {
+  flex: 1;
+  max-width: 400px;
+  padding: 10px 16px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background-color: white;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #409eff;
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1);
+}
+
+.search-input::placeholder {
+  color: #909399;
+}
+
+.clear-button {
+  padding: 8px 16px;
+  background-color: #f5f7fa;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  color: #606266;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.clear-button:hover {
+  background-color: #ecf5ff;
+  border-color: #c6e2ff;
+  color: #409eff;
+}
+
+/* Стилі для інформації про знайдені артикули */
+.articles-found {
+  color: #606266;
+  font-size: 14px;
+  margin-bottom: 16px;
+  padding: 8px 0;
+}
+
+/* Стилі для роздільника */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, #e0e6ed 50%, transparent 100%);
+  margin: 20px 0;
+}
+
+/* Стилі для таблиці */
+.articles-table-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.articles-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.articles-table th {
+  background-color: #f8f9fa;
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 1px solid #e0e6ed;
+  position: relative;
+}
+
+.articles-table th::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 16px;
+  background-color: #e0e6ed;
+}
+
+.articles-table th:last-child::after {
+  display: none;
+}
+
+.articles-table td {
+  padding: 16px 12px;
+  border-bottom: 1px solid #f0f2f5;
+  color: #606266;
+  transition: background-color 0.3s ease;
+}
+
+.articles-table tr:last-child td {
+  border-bottom: none;
+}
+
+.articles-table tr:hover td {
+  background-color: #f8fafc;
+}
+
+/* Стилі для конкретних колонок */
+.article-name {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.article-thickness {
+  color: #409eff;
+  font-weight: 500;
+}
+
+.article-material {
+  color: #67c23a;
+}
+
+/* Стилі для файлів */
+.file-link {
+  color: #909399;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.3s ease;
+}
+
+.file-link:hover {
+  color: #409eff;
+}
+
+.file-icon {
+  font-size: 16px;
+}
+
+.no-file {
+  color: #c0c4cc;
+  font-style: italic;
+}
+
+/* Стилі для кнопок дій */
+.actions-container {
+  display: flex;
+  gap: 8px;
+}
+
+.action-button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.3s ease;
+}
+
+.edit-button {
+  background-color: #ecf5ff;
+  color: #409eff;
+}
+
+.edit-button:hover {
+  background-color: #409eff;
+  color: white;
+}
+
+.delete-button {
+  background-color: #fef0f0;
+  color: #f56c6c;
+}
+
+.delete-button:hover {
+  background-color: #f56c6c;
+  color: white;
+}
+
+/* Стилі для вкладок (якщо вони є) */
+.tabs-container {
+  display: flex;
+  border-bottom: 1px solid #e0e6ed;
+  margin-bottom: 20px;
+  background: white;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+}
+
+.tab {
+  padding: 12px 24px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #606266;
+  transition: all 0.3s ease;
+  border-bottom: 2px solid transparent;
+  position: relative;
+}
+
+.tab.active {
+  color: #409eff;
+  border-bottom-color: #409eff;
+  background-color: #ecf5ff;
+}
+
+.tab:hover:not(.active) {
+  color: #409eff;
+  background-color: #f5f7fa;
+}
+
+/* Анімації */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.articles-table tr {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.articles-table tr:nth-child(even) {
+  animation-delay: 0.05s;
+}
+
+.articles-table tr:nth-child(odd) {
+  animation-delay: 0.1s;
+}
+
+/* Адаптивність */
+@media (max-width: 768px) {
+  .articles-management {
+    padding: 12px;
+  }
+  
+  .search-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-input {
+    max-width: none;
+  }
+  
+  .articles-table-container {
+    overflow-x: auto;
+  }
+  
+  .articles-table {
+    min-width: 600px;
+  }
+  
+  .tabs-container {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+}

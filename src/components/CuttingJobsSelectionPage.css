@@ -1,0 +1,478 @@
+/* --- Глобальний фон для тіла сторінки --- */
+body {
+    background-color: #f0f4f8; /* Легкий блакитно-сірий фон для всієї сторінки */
+}
+
+/* --- Загальні стилі контейнера --- */
+.jobs-selection-container {
+    padding: 30px; /* Збільшимо внутрішній відступ */
+    max-width: 900px;
+    margin: 30px auto; /* Додамо зовнішній відступ зверху/знизу */
+    font-family: 'Inter', sans-serif;
+    background-color: #ffffff; /* Білий фон для робочої області */
+    border-radius: 12px; /* Більш округлі кути */
+    /* Стилізована тінь для робочої зони */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); 
+}
+
+h1 {
+    color: #0d47a1;
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+/* --- Стилі для пошуку та управління --- */
+.search-controls input {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 25px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.search-controls input:focus {
+    border-color: #1976d2;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+    outline: none;
+}
+
+/* --- Стилі для Списку Завдань --- */
+.jobs-list {
+    display: grid;
+    gap: 15px;
+}
+
+.job-card {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-left: 8px solid #ccc; /* Базовий колір */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+}
+
+.job-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.job-info h3 {
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: #1a237e;
+    font-size: 1.2rem;
+}
+
+.job-info p {
+    margin: 4px 0;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.notes-snippet {
+    font-style: italic;
+    font-size: 0.85rem;
+    color: #777;
+}
+
+/* --- Індикатор Статусу --- */
+.job-status-indicator {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.select-button {
+    background-color: #1976d2;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.select-button:hover {
+    background-color: #1565c0;
+}
+
+/* --- Кольори за Статусами --- */
+
+/* Створено / В черзі */
+.status-створено, .status-вчерзі {
+    border-left-color: #0288d1; /* Синій */
+}
+.status-створено .status-text, .status-вчерзі .status-text {
+    background-color: #e3f2fd;
+    color: #0288d1;
+}
+
+/* В роботі */
+.status-вроботі {
+    border-left-color: #fbc02d; /* Жовтий */
+}
+.status-вроботі .status-text {
+    background-color: #fffde7;
+    color: #fbc02d;
+}
+
+/* Виконано */
+.status-виконано {
+    border-left-color: #388e3c; /* Зелений */
+}
+.status-виконано .status-text {
+    background-color: #e8f5e9;
+    color: #388e3c;
+}
+
+/* Призузунено */
+.status-призузунено {
+    border-left-color: #e64a19; /* Помаранчевий */
+}
+.status-призузунено .status-text {
+    background-color: #fbe9e7;
+    color: #e64a19;
+}
+
+/* Скасовано */
+.status-скасовано {
+    border-left-color: #d32f2f; /* Червоний */
+}
+.status-скасовано .status-text {
+    background-color: #ffebee;
+    color: #d32f2f;
+}
+
+/* --- Стилі для Режиму Виконання --- */
+.job-execution-mode {
+    padding: 10px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.back-button {
+    background-color: #607d8b;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.back-button:hover {
+    background-color: #455a64;
+}
+
+/* Адаптивність для мобільних пристроїв */
+@media (max-width: 600px) {
+    .job-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .job-status-indicator {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .select-button {
+        flex-grow: 1;
+        margin-left: 10px;
+    }
+}
+
+/* --- СТИЛІ ДЛЯ ФОРМИ ВИКОНАННЯ (CuttingJobExecution) --- */
+
+.execution-container {
+    background-color: #fafafa;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.execution-container h1 {
+    font-size: 1.6rem;
+    color: #1a237e;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+}
+
+.error-box {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 12px;
+    border: 1px solid #ef9a9a;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.warning-box {
+    background-color: #fff8e1;
+    color: #fbc02d;
+    padding: 15px;
+    border: 1px solid #ffeb3b;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.program-control-block {
+    margin-bottom: 20px;
+}
+
+.program-input-box {
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+.program-input-row {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.program-input-row label {
+    flex-grow: 1;
+}
+
+.program-id-display {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: #616161;
+}
+
+.editing-hint {
+    color: #00bcd4;
+    font-weight: 600;
+}
+
+.create-program-button, .save-edit-button, .edit-button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background-color 0.3s;
+}
+
+.create-program-button {
+    background-color: #4caf50;
+    color: white;
+}
+.create-program-button:hover:not(:disabled) {
+    background-color: #388e3c;
+}
+
+.save-edit-button {
+    background-color: #2196f3;
+    color: white;
+}
+.save-edit-button:hover:not(:disabled) {
+    background-color: #1976d2;
+}
+
+.edit-button {
+    background-color: #ff9800;
+    color: white;
+}
+.edit-button:hover:not(:disabled) {
+    background-color: #fb8c00;
+}
+
+/* --- Оператор та Статус Контроль --- */
+.operator-control {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.operator-control label, .program-input-row label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #424242;
+}
+
+.operator-control input:not([type="checkbox"]), .operator-control select, .program-input-row input {
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #bdbdbd;
+    border-radius: 4px;
+    transition: border-color 0.3s;
+}
+
+.operator-control input:focus, .operator-control select:focus, .program-input-row input:focus {
+    border-color: #1976d2;
+    outline: none;
+}
+
+.operator-control input:disabled, .operator-control select:disabled, .program-input-row input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+/* --- Таблиця Результатів (job-results-section) --- */
+.job-results-section {
+    overflow-x: auto;
+}
+
+.full-width-table table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px; /* Для мобільних, щоб не з'їжджала таблиця */
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.full-width-table th, .full-width-table td {
+    border: 1px solid #e0e0e0;
+    padding: 10px;
+    text-align: left;
+}
+
+.full-width-table th {
+    background-color: #e3f2fd;
+    color: #1a237e;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.full-width-table td {
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.full-width-table input[type="number"], .full-width-table input[type="text"] {
+    width: 90px;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.full-width-table input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.column-input-narrow {
+    width: 100px;
+}
+
+.column-narrow {
+    width: 120px;
+}
+
+/* Додаткові параметри */
+.additional-log-params {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
+
+.additional-log-params label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #424242;
+}
+
+.additional-log-params input {
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #bdbdbd;
+    border-radius: 4px;
+    text-align: center;
+}
+
+/* --- Кнопки Дій --- */
+.action-buttons-container {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.save-button, .end-button {
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.save-button {
+    background-color: #4caf50; /* Green for Save */
+    color: white;
+}
+
+.save-button:hover:not(:disabled) {
+    background-color: #388e3c;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.end-button {
+    background-color: #ff9800; /* Orange for Complete */
+    color: white;
+}
+
+.end-button:hover:not(:disabled) {
+    background-color: #f57c00;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.save-button:disabled, .end-button:disabled, .create-program-button:disabled, .save-edit-button:disabled, .edit-button:disabled {
+    background-color: #b0bec5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.hint-info {
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #555;
+    font-style: italic;
+}
+
+.error-text {
+    color: #d32f2f;
+    font-weight: 600;
+}
