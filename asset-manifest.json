@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/cutting-log-app/static/css/main.cf1fe70f.css",
-    "main.js": "/cutting-log-app/static/js/main.0aeed48f.js",
+    "main.js": "/cutting-log-app/static/js/main.815db871.js",
     "index.html": "/cutting-log-app/index.html",
     "main.cf1fe70f.css.map": "/cutting-log-app/static/css/main.cf1fe70f.css.map",
-    "main.0aeed48f.js.map": "/cutting-log-app/static/js/main.0aeed48f.js.map"
+    "main.815db871.js.map": "/cutting-log-app/static/js/main.815db871.js.map"
   },
   "entrypoints": [
     "static/css/main.cf1fe70f.css",
-    "static/js/main.0aeed48f.js"
+    "static/js/main.815db871.js"
   ]
 }
