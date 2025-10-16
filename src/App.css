@@ -2,10 +2,11 @@
  * Використовує фірмовий стиль (Indigo, заокруглення, світлий фон)
  */
 
+
 .App {
   text-align: center;
   min-height: 100vh;
-  background-color: #4B5563; /* Дуже світлий сірий фон */
+  /*background-color: #4B5563; !* Дуже світлий сірий фон *!*/
   font-family: 'Inter', sans-serif;
 }
 
@@ -14,12 +15,15 @@
 ---------------------------------------------------------------- */
 
 header {
-  background-color: #ffffff;
-  box-shadow: 1px 4px 12px rgba(0, 0, 0, 0.08); /* Більш виразна тінь */
+  background-color: #F0F8FF;
+  box-shadow: 5px 4px 12px rgba(0, 0, 0, 0.08); /* Більш виразна тінь */
   /* position: sticky; */
-  top: 0;
-  z-index: 50;
-  /* border-bottom: 1px solid #E5E7EB; */
+  /*top: 0;*/
+  /*z-index: 50;*/
+    border-bottom: 1px solid #E5E7EB;
+    width: 70%;
+    margin: auto;
+    border-radius: 10px;
 }
 
 .header-container {
@@ -41,9 +45,17 @@ header {
 
 .app-navigation {
   display: flex;
-  justify-content: flex-start; /* Вирівнювання вправо */
+  justify-content: space-between; /* Вирівнювання вправо */
   align-items: center;
-  padding-left: 10%;
+  padding-left: 1%;
+}
+
+.nav-links {
+    display: flex;
+}
+
+.logo-container{
+    margin-right: 2%;
 }
 
 .nav-button {
@@ -64,14 +76,15 @@ header {
 }
 
 .nav-button:hover {
-  color: #3730A3; /* Темніший індиго на hover */
-  background-color: #F3F4F6; /* Світло-сірий фон на hover */
+  color: #1B2735; /* Темніший індиго на hover */
+    background: #E8EFFF;
+    font-size: 15px;
 }
 
 .nav-button.active {
   color: #4F46E5; /* Індиго */
   border-bottom: 3px solid #4F46E5;
-  background-color: #EEF2FF; /* Дуже світлий фон для активної вкладки */
+  /*background-color: #EEF2FF; !* Дуже світлий фон для активної вкладки *!*/
 }
 
 /* ----------------------------------------------------------------
@@ -95,10 +108,11 @@ header {
   .app-logo {
     margin-bottom: 10px;
   }
-  
+
   .app-navigation {
     width: 100%;
-    justify-content: space-around;
+    /*justify-content: space-around;*/
+      height: 50px;
   }
 
   .nav-button {
@@ -106,4 +120,302 @@ header {
     margin: 0 2px;
     justify-content: center;
   }
+}
+
+/* Стилі для авторизації */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    padding: 20px;
+}
+
+.login-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-form h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: #555;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.login-button {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.login-button:hover {
+    background-color: #0056b3;
+}
+
+.error-message {
+    color: #dc3545;
+    text-align: center;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+}
+
+/* ----------------------------------------------------------------
+   Адаптивність для хедера та навігації
+---------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+    .header-container {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 8px 12px;
+        width: 95%;
+    }
+
+    .logo-container {
+        margin-right: 0;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+
+    .app-logo {
+        font-size: 1.4em;
+        margin-bottom: 0;
+    }
+
+    .app-navigation {
+        width: 100%;
+        height: auto;
+        padding-left: 0;
+        justify-content: center;
+    }
+
+    .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 4px;
+        width: 100%;
+    }
+
+    .nav-button {
+        flex: 1;
+        min-width: 120px;
+        margin: 2px;
+        padding: 10px 12px;
+        font-size: 0.85em;
+        text-align: center;
+        justify-content: center;
+        border-radius: 6px;
+    }
+
+    /* Зменшуємо кількість кнопок в рядку на дуже малих екранах */
+    @media (max-width: 480px) {
+        .nav-links {
+            gap: 2px;
+        }
+
+        .nav-button {
+            min-width: 110px;
+            padding: 8px 10px;
+            font-size: 0.8em;
+            margin: 1px;
+        }
+
+        .app-logo {
+            font-size: 1.2em;
+        }
+    }
+}
+
+/* Для дуже малих екранів (менше 360px) */
+@media (max-width: 360px) {
+    .header-container {
+        padding: 6px 8px;
+        width: 98%;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .nav-button {
+        min-width: auto;
+        width: 100%;
+        margin: 0;
+        padding: 10px;
+    }
+
+    .app-logo {
+        font-size: 1.1em;
+    }
+}
+
+/* Горизонтальна орієнтація на телефонах */
+@media (max-width: 768px) and (orientation: landscape) {
+    .header-container {
+        flex-direction: row;
+        align-items: center;
+        padding: 6px 12px;
+    }
+
+    .logo-container {
+        margin-bottom: 0;
+        margin-right: 10px;
+        flex-shrink: 0;
+    }
+
+    .app-navigation {
+        width: auto;
+        flex-grow: 1;
+    }
+
+    .nav-links {
+        flex-wrap: nowrap;
+        justify-content: flex-end;
+    }
+
+    .nav-button {
+        min-width: auto;
+        flex: none;
+        padding: 8px 12px;
+        font-size: 0.8em;
+    }
+}
+
+/* Спеціальні фікси для iOS */
+@supports (-webkit-touch-callout: none) {
+    .nav-button {
+        -webkit-tap-highlight-color: transparent;
+        padding: 14px 16px; /* Більші області торкання для iOS */
+    }
+
+    @media (max-width: 768px) {
+        .nav-button {
+            padding: 12px 14px;
+        }
+    }
+}
+
+/* Запобігання збійним стилям при збільшенні на мобільних */
+@media (max-width: 768px) {
+    .App-content {
+        padding: 12px;
+    }
+
+    header {
+        width: 95%;
+        margin: 8px auto;
+        border-radius: 8px;
+    }
+}
+
+/* Покращення для планшетів */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .header-container {
+        width: 90%;
+        padding: 12px 20px;
+    }
+
+    .nav-button {
+        padding: 10px 16px;
+        font-size: 0.9em;
+        margin: 0 3px;
+    }
+
+    .app-logo {
+        font-size: 1.6em;
+    }
+}
+
+/* Адаптивність для форми логіну */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 10px;
+        min-height: 50vh;
+        align-items: flex-start;
+        margin-top: 20px;
+    }
+
+    .login-form {
+        padding: 1.5rem;
+        margin: 0;
+        max-width: none;
+    }
+
+    .login-form h2 {
+        font-size: 1.3em;
+        margin-bottom: 1rem;
+    }
+
+    .form-group input {
+        padding: 0.9rem; /* Більше для зручного торкання */
+        font-size: 16px; /* Запобігає збільшенню в iOS */
+    }
+
+    .login-button {
+        padding: 0.9rem;
+        font-size: 16px; /* Запобігає збільшенню в iOS */
+    }
+}
+
+/* Фікс для висоти екрана на мобільних */
+@media (max-height: 600px) and (max-width: 768px) {
+    .login-container {
+        min-height: 70vh;
+        padding: 5px;
+    }
+
+    .login-form {
+        padding: 1rem;
+    }
+}
+
+/* Покращення скролу на мобільних */
+@media (max-width: 768px) {
+    .App {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    header {
+        position: relative; /* Вимикаємо sticky на мобільних якщо потрібно */
+    }
 }

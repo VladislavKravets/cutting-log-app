@@ -1,58 +1,72 @@
-// src/components/ArticlesManagement.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import './ArticlesManagement.css';
 
+// Константи для кращої підтримки
+const SEARCH_OPTIONS = {
+    NAME: 'name',
+    ARTICLE_NUM: 'article_num',
+    MATERIAL_TYPE: 'material_type'
+};
+
+const SORT_DIRECTION = {
+    ASC: 'asc',
+    DESC: 'desc'
+};
+
 function ArticlesManagement() {
+    // Стани для даних
     const [articles, setArticles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    
-    // Стани для пошуку та фільтрації
+
+    // Стани для пошуку та сортування
     const [searchTerm, setSearchTerm] = useState('');
-    const [searchBy, setSearchBy] = useState('name'); // 'name', 'article_num', 'material_type'
+    const [searchBy, setSearchBy] = useState(SEARCH_OPTIONS.NAME);
     const [sortField, setSortField] = useState('article_id');
-    const [sortDirection, setSortDirection] = useState('asc');
-    
+    const [sortDirection, setSortDirection] = useState(SORT_DIRECTION.ASC);
+
     // Стани для модальних вікон
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    
-    // Стани для форми
-    const [currentArticle, setCurrentArticle] = useState(null);
-    const [formData, setFormData] = useState({
-        name: '',
-        article_num: '',
-        thickness: '',
-        material_type: '',
-        file_url: ''
+    const [modalState, setModalState] = useState({
+        create: false,
+        edit: false,
+        delete: false
     });
 
+    // Стани для форми
+    const [currentArticle, setCurrentArticle] = useState(null);
+    const [formData, setFormData] = useState(getInitialFormData());
+
+    // Ініціалізація форми
+    function getInitialFormData() {
+        return {
+            name: '',
+            article_num: '',
+            thickness: '',
+            material_type: '',
+            file_url: ''
+        };
+    }
+
     // Завантаження артикулів
-    const fetchArticles = async () => {
+    const fetchArticles = useCallback(async () => {
         setLoading(true);
         setError(null);
+
         try {
             let query = supabase
                 .from('articles')
                 .select('*')
-                .order(sortField, { ascending: sortDirection === 'asc' });
+                .order(sortField, { ascending: sortDirection === SORT_DIRECTION.ASC });
 
             // Застосування пошуку
             if (searchTerm) {
-                if (searchBy === 'name') {
-                    query = query.ilike('name', `%${searchTerm}%`);
-                } else if (searchBy === 'article_num') {
-                    query = query.ilike('article_num', `%${searchTerm}%`);
-                } else if (searchBy === 'material_type') {
-                    query = query.ilike('material_type', `%${searchTerm}%`);
-                }
+                query = query.ilike(searchBy, `%${searchTerm}%`);
             }
 
             const { data, error } = await query;
-
             if (error) throw error;
+
             setArticles(data || []);
         } catch (err) {
             console.error('Помилка завантаження артикулів:', err);
@@ -60,133 +74,103 @@ function ArticlesManagement() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [searchTerm, searchBy, sortField, sortDirection]);
 
     useEffect(() => {
         fetchArticles();
-    }, [searchTerm, searchBy, sortField, sortDirection]);
+    }, [fetchArticles]);
 
     // Обробка зміни сортування
     const handleSort = (field) => {
         if (sortField === field) {
-            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+            setSortDirection(current =>
+                current === SORT_DIRECTION.ASC ? SORT_DIRECTION.DESC : SORT_DIRECTION.ASC
+            );
         } else {
             setSortField(field);
-            setSortDirection('asc');
+            setSortDirection(SORT_DIRECTION.ASC);
         }
     };
 
-    // Відкриття модального вікна створення
-    const handleCreate = () => {
-        setFormData({
-            name: '',
-            article_num: '',
-            thickness: '',
-            material_type: '',
-            file_url: ''
-        });
-        setIsCreateModalOpen(true);
-    };
-
-    // Відкриття модального вікна редагування
-    const handleEdit = (article) => {
+    // Управління модальними вікнами
+    const openModal = (type, article = null) => {
         setCurrentArticle(article);
-        setFormData({
-            name: article.name,
-            article_num: article.article_num,
-            thickness: article.thickness,
-            material_type: article.material_type,
-            file_url: article.file_url || ''
-        });
-        setIsEditModalOpen(true);
+        setModalState(prev => ({ ...prev, [type]: true }));
+
+        if (type === 'create') {
+            setFormData(getInitialFormData());
+        } else if (type === 'edit' && article) {
+            setFormData({
+                name: article.name,
+                article_num: article.article_num,
+                thickness: article.thickness,
+                material_type: article.material_type,
+                    file_url: article.file_url || ''
+            });
+        }
     };
 
-    // Відкриття модального вікна видалення
-    const handleDelete = (article) => {
-        setCurrentArticle(article);
-        setIsDeleteModalOpen(true);
+    const closeModal = (type) => {
+        setModalState(prev => ({ ...prev, [type]: false }));
+        setError(null);
     };
 
-    // Обробка зміни форми
-    const handleFormChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: name === 'thickness' ? parseFloat(value) || '' : value
-        }));
+    // Перевірка унікальності номеру артикула
+    const checkArticleNumberUnique = async (articleNum, excludeId = null) => {
+        let query = supabase
+            .from('articles')
+            .select('article_num')
+            .eq('article_num', articleNum);
+
+        if (excludeId) {
+            query = query.neq('article_id', excludeId);
+        }
+
+        const { data } = await query.single();
+        return !data;
     };
 
-    // Створення нового артикула
-    const handleCreateSubmit = async (e) => {
+    // Обробка відправки форми
+    const handleSubmit = async (e, type) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
 
         try {
-            // Перевірка на унікальність article_num
+            // Перевірка унікальності для створення та редагування
             if (formData.article_num) {
-                const { data: existingArticle } = await supabase
-                    .from('articles')
-                    .select('article_num')
-                    .eq('article_num', formData.article_num)
-                    .single();
+                const isUnique = await checkArticleNumberUnique(
+                    formData.article_num,
+                    type === 'edit' ? currentArticle.article_id : null
+                );
 
-                if (existingArticle) {
+                if (!isUnique) {
                     throw new Error(`Артикул з номером ${formData.article_num} вже існує!`);
                 }
             }
 
-            const { data, error } = await supabase
-                .from('articles')
-                .insert([formData])
-                .select();
-
-            if (error) throw error;
-
-            setIsCreateModalOpen(false);
-            fetchArticles(); // Оновлюємо список
-            alert('Артикул успішно створений!');
-        } catch (err) {
-            console.error('Помилка створення артикула:', err);
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Оновлення артикула
-    const handleEditSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-
-        try {
-            // Перевірка на унікальність article_num (крім поточного артикула)
-            if (formData.article_num && formData.article_num !== currentArticle.article_num) {
-                const { data: existingArticle } = await supabase
+            if (type === 'create') {
+                const { error } = await supabase
                     .from('articles')
-                    .select('article_num')
-                    .eq('article_num', formData.article_num)
-                    .neq('article_id', currentArticle.article_id)
-                    .single();
+                    .insert([formData])
+                    .select();
+                if (error) throw error;
 
-                if (existingArticle) {
-                    throw new Error(`Артикул з номером ${formData.article_num} вже існує!`);
-                }
+                alert('Артикул успішно створений!');
+            } else if (type === 'edit') {
+                const { error } = await supabase
+                    .from('articles')
+                    .update(formData)
+                    .eq('article_id', currentArticle.article_id);
+                if (error) throw error;
+
+                alert('Артикул успішно оновлений!');
             }
 
-            const { error } = await supabase
-                .from('articles')
-                .update(formData)
-                .eq('article_id', currentArticle.article_id);
-
-            if (error) throw error;
-
-            setIsEditModalOpen(false);
-            fetchArticles(); // Оновлюємо список
-            alert('Артикул успішно оновлений!');
+            closeModal(type);
+            fetchArticles();
         } catch (err) {
-            console.error('Помилка оновлення артикула:', err);
+            console.error(`Помилка ${type === 'create' ? 'створення' : 'оновлення'} артикула:`, err);
             setError(err.message);
         } finally {
             setLoading(false);
@@ -194,21 +178,19 @@ function ArticlesManagement() {
     };
 
     // Видалення артикула
-    const handleDeleteConfirm = async () => {
+    const handleDelete = async () => {
         setLoading(true);
         setError(null);
 
         try {
-            // Перевірка, чи артикул використовується в завданнях
-            const { data: usageData, error: usageError } = await supabase
+            // Перевірка використання артикула
+            const { data: usageData } = await supabase
                 .from('job_details')
                 .select('job_detail_id')
                 .eq('article_id', currentArticle.article_id)
                 .limit(1);
 
-            if (usageError) throw usageError;
-
-            if (usageData && usageData.length > 0) {
+            if (usageData?.length > 0) {
                 throw new Error('Цей артикул використовується в завданнях і не може бути видалений!');
             }
 
@@ -216,11 +198,10 @@ function ArticlesManagement() {
                 .from('articles')
                 .delete()
                 .eq('article_id', currentArticle.article_id);
-
             if (error) throw error;
 
-            setIsDeleteModalOpen(false);
-            fetchArticles(); // Оновлюємо список
+            closeModal('delete');
+            fetchArticles();
             alert('Артикул успішно видалений!');
         } catch (err) {
             console.error('Помилка видалення артикула:', err);
@@ -230,29 +211,128 @@ function ArticlesManagement() {
         }
     };
 
-    // Скидання пошуку
+    // Допоміжні функції
+    const handleFormChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: name === 'thickness' ? parseFloat(value) || '' : value
+        }));
+    };
+
     const handleClearSearch = () => {
         setSearchTerm('');
-        setSearchBy('name');
+        setSearchBy(SEARCH_OPTIONS.NAME);
     };
 
-    // Рендер іконки сортування
     const renderSortIcon = (field) => {
         if (sortField !== field) return '↕️';
-        return sortDirection === 'asc' ? '↑' : '↓';
+        return sortDirection === SORT_DIRECTION.ASC ? '↑' : '↓';
     };
 
+    const getSearchPlaceholder = () => {
+        const placeholders = {
+            [SEARCH_OPTIONS.NAME]: "Назва артикула...",
+            [SEARCH_OPTIONS.ARTICLE_NUM]: "Номер артикула...",
+            [SEARCH_OPTIONS.MATERIAL_TYPE]: "Тип матеріалу..."
+        };
+        return placeholders[searchBy];
+    };
+
+    // Рендер функції
+    const renderTableHeader = () => (
+        <thead>
+        <tr>
+            <th onClick={() => handleSort('article_id')}>
+                ID {renderSortIcon('article_id')}
+            </th>
+            <th onClick={() => handleSort('article_num')}>
+                Номер {renderSortIcon('article_num')}
+            </th>
+            <th onClick={() => handleSort('name')}>
+                Назва {renderSortIcon('name')}
+            </th>
+            <th onClick={() => handleSort('thickness')}>
+                Товщина {renderSortIcon('thickness')}
+            </th>
+            <th onClick={() => handleSort('material_type')}>
+                Матеріал {renderSortIcon('material_type')}
+            </th>
+            <th onClick={() => handleSort('file_url')}>
+                Файл {renderSortIcon('file_url')}
+            </th>
+            <th>Дії</th>
+        </tr>
+        </thead>
+    );
+
+    const renderTableRow = (article) => (
+        <tr key={article.article_id}>
+            <td className="article-num">{article.article_id}</td>
+            <td className="article-num">{article.article_num}</td>
+            <td className="article-name">{article.name}</td>
+            <td className="article-thickness">{article.thickness} мм</td>
+            <td className="article-material">{article.material_type}</td>
+            <td className="article-file">
+                {article.file_url ? (
+                    <a
+                        href={article.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="file-link"
+                    >
+                        📎 Файл
+                    </a>
+                ) : (
+                    <span className="no-file">—</span>
+                )}
+            </td>
+            <td className="actions">
+                <button
+                    className="edit-button"
+                    onClick={() => openModal('edit', article)}
+                    title="Редагувати"
+                >
+                    ✏️
+                </button>
+                <button
+                    className="delete-button"
+                    onClick={() => openModal('delete', article)}
+                    title="Видалити"
+                >
+                    🗑️
+                </button>
+            </td>
+        </tr>
+    );
+
+    const renderFormField = (label, name, type = 'text', required = true, props = {}) => (
+        <div className="form-group">
+            <label>{label} {required && '*'}</label>
+            <input
+                type={type}
+                name={name}
+                value={formData[name]}
+                onChange={handleFormChange}
+                required={required}
+                {...props}
+            />
+        </div>
+    );
+
+    // Завантажувальний стан
     if (loading && articles.length === 0) {
         return <div className="loading">Завантаження артикулів...</div>;
     }
 
     return (
         <div className="articles-management">
+            {/* Заголовок та кнопка додавання */}
             <div className="articles-header">
                 <h1>📦 Управління Артикулами</h1>
-                <button 
+                <button
                     className="create-button"
-                    onClick={handleCreate}
+                    onClick={() => openModal('create')}
                     disabled={loading}
                 >
                     + Додати Артикул
@@ -261,44 +341,44 @@ function ArticlesManagement() {
 
             {error && <div className="error-message">{error}</div>}
 
-            {/* Панель пошуку та фільтрів */}
-            <div className="search-panel">
-                <div className="search-controls">
-                    <div className="search-group">
-                        <label>Пошук за:</label>
-                        <select 
-                            value={searchBy} 
+            {/* Панель пошуку */}
+            <div className="articles-search">
+                <div className="search-filters">
+                    <div className="filter-field">
+                        <label htmlFor="search-by">Пошук за:</label>
+                        <select
+                            id="search-by"
+                            value={searchBy}
                             onChange={(e) => setSearchBy(e.target.value)}
                         >
-                            <option value="name">Назвою</option>
-                            <option value="article_num">Номером</option>
-                            <option value="material_type">Матеріалом</option>
+                            <option value={SEARCH_OPTIONS.NAME}>Назвою артикула</option>
+                            <option value={SEARCH_OPTIONS.ARTICLE_NUM}>Номером артикула</option>
+                            <option value={SEARCH_OPTIONS.MATERIAL_TYPE}>Типом матеріалу</option>
                         </select>
                     </div>
 
-                    <div className="search-group">
-                        <label>Пошук:</label>
+                    <div className="filter-field">
+                        <label htmlFor="search-term">Значення:</label>
                         <input
+                            id="search-term"
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder={
-                                searchBy === 'name' ? "Назва артикула..." :
-                                searchBy === 'article_num' ? "Номер артикула..." :
-                                "Тип матеріалу..."
-                            }
+                            placeholder={getSearchPlaceholder()}
                         />
                     </div>
 
-                    <button 
-                        className="clear-search-button"
+                    <button
+                        type="button"
+                        className="filter-clear"
                         onClick={handleClearSearch}
+                        disabled={!searchTerm && searchBy === SEARCH_OPTIONS.NAME}
                     >
                         Очистити
                     </button>
                 </div>
 
-                <div className="results-info">
+                <div className="search-results-count">
                     Знайдено: {articles.length} артикулів
                 </div>
             </div>
@@ -306,69 +386,9 @@ function ArticlesManagement() {
             {/* Таблиця артикулів */}
             <div className="articles-table-container">
                 <table className="articles-table">
-                    <thead>
-                        <tr>
-                            <th onClick={() => handleSort('article_id')}>
-                                ID {renderSortIcon('article_id')}
-                            </th>
-                            <th onClick={() => handleSort('article_num')}>
-                                Номер {renderSortIcon('article_num')}
-                            </th>
-                            <th onClick={() => handleSort('name')}>
-                                Назва {renderSortIcon('name')}
-                            </th>
-                            <th onClick={() => handleSort('thickness')}>
-                                Товщина {renderSortIcon('thickness')}
-                            </th>
-                            <th onClick={() => handleSort('material_type')}>
-                                Матеріал {renderSortIcon('material_type')}
-                            </th>
-                            <th onClick={() => handleSort('file_url')}>
-                                Файл {renderSortIcon('file_url')}
-                            </th>
-                            <th>Дії</th>
-                        </tr>
-                    </thead>
+                    {renderTableHeader()}
                     <tbody>
-                        {articles.map((article) => (
-                            <tr key={article.article_id}>
-                                <td className="article-num">{article.article_id}</td>
-                                <td className="article-num">{article.article_num}</td>
-                                <td className="article-name">{article.name}</td>
-                                <td className="article-thickness">{article.thickness} мм</td>
-                                <td className="article-material">{article.material_type}</td>
-                                <td className="article-file">
-                                    {article.file_url ? (
-                                        <a 
-                                            href={article.file_url} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            className="file-link"
-                                        >
-                                            📎 Файл
-                                        </a>
-                                    ) : (
-                                        <span className="no-file">—</span>
-                                    )}
-                                </td>
-                                <td className="actions">
-                                    <button 
-                                        className="edit-button"
-                                        onClick={() => handleEdit(article)}
-                                        title="Редагувати"
-                                    >
-                                        ✏️
-                                    </button>
-                                    <button 
-                                        className="delete-button"
-                                        onClick={() => handleDelete(article)}
-                                        title="Видалити"
-                                    >
-                                        🗑️
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                    {articles.map(renderTableRow)}
                     </tbody>
                 </table>
 
@@ -380,202 +400,113 @@ function ArticlesManagement() {
             </div>
 
             {/* Модальне вікно створення */}
-            {isCreateModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h2>Створення нового артикула</h2>
-                        <form onSubmit={handleCreateSubmit}>
-                            <div className="form-group">
-                                <label>Номер артикула *</label>
-                                <input
-                                    type="text"
-                                    name="article_num"
-                                    value={formData.article_num}
-                                    onChange={handleFormChange}
-                                    placeholder="3000312.00.001"
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Назва артикула *</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleFormChange}
-                                    placeholder="Пластина опорна"
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Товщина (мм) *</label>
-                                <input
-                                    type="number"
-                                    name="thickness"
-                                    step="0.1"
-                                    min="0.1"
-                                    value={formData.thickness}
-                                    onChange={handleFormChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Тип матеріалу *</label>
-                                <input
-                                    type="text"
-                                    name="material_type"
-                                    value={formData.material_type}
-                                    onChange={handleFormChange}
-                                    placeholder="Сталь 3"
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>URL файлу</label>
-                                <input
-                                    type="text"
-                                    name="file_url"
-                                    value={formData.file_url}
-                                    onChange={handleFormChange}
-                                    placeholder="design/file_name.dxf"
-                                />
-                            </div>
-
-                            <div className="modal-actions">
-                                <button 
-                                    type="submit" 
-                                    className="submit-button"
-                                    disabled={loading}
-                                >
-                                    {loading ? 'Створення...' : 'Створити'}
-                                </button>
-                                <button 
-                                    type="button" 
-                                    className="cancel-button"
-                                    onClick={() => setIsCreateModalOpen(false)}
-                                >
-                                    Скасувати
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+            {modalState.create && (
+                <Modal
+                    title="Створення нового артикула"
+                    onClose={() => closeModal('create')}
+                    onSubmit={(e) => handleSubmit(e, 'create')}
+                    loading={loading}
+                    submitText={loading ? 'Створення...' : 'Створити'}
+                >
+                    {renderFormField('Номер артикула', 'article_num', 'text', true, {
+                        placeholder: '3000312.00.001'
+                    })}
+                    {renderFormField('Назва артикула', 'name', 'text', true, {
+                        placeholder: 'Пластина опорна'
+                    })}
+                    {renderFormField('Товщина (мм)', 'thickness', 'number', true, {
+                        step: "0.1",
+                        min: "0.1"
+                    })}
+                    {renderFormField('Тип матеріалу', 'material_type', 'text', true, {
+                        placeholder: 'Сталь 3'
+                    })}
+                    {renderFormField('URL файлу', 'file_url', 'text', false, {
+                        placeholder: 'design/file_name.dxf'
+                    })}
+                </Modal>
             )}
 
             {/* Модальне вікно редагування */}
-            {isEditModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h2>Редагування артикула</h2>
-                        <form onSubmit={handleEditSubmit}>
-                            <div className="form-group">
-                                <label>Номер артикула *</label>
-                                <input
-                                    type="text"
-                                    name="article_num"
-                                    value={formData.article_num}
-                                    onChange={handleFormChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Назва артикула *</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleFormChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Товщина (мм) *</label>
-                                <input
-                                    type="number"
-                                    name="thickness"
-                                    step="0.1"
-                                    min="0.1"
-                                    value={formData.thickness}
-                                    onChange={handleFormChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Тип матеріалу *</label>
-                                <input
-                                    type="text"
-                                    name="material_type"
-                                    value={formData.material_type}
-                                    onChange={handleFormChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>URL файлу</label>
-                                <input
-                                    type="text"
-                                    name="file_url"
-                                    value={formData.file_url}
-                                    onChange={handleFormChange}
-                                />
-                            </div>
-
-                            <div className="modal-actions">
-                                <button 
-                                    type="submit" 
-                                    className="submit-button"
-                                    disabled={loading}
-                                >
-                                    {loading ? 'Оновлення...' : 'Оновити'}
-                                </button>
-                                <button 
-                                    type="button" 
-                                    className="cancel-button"
-                                    onClick={() => setIsEditModalOpen(false)}
-                                >
-                                    Скасувати
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+            {modalState.edit && (
+                <Modal
+                    title="Редагування артикула"
+                    onClose={() => closeModal('edit')}
+                    onSubmit={(e) => handleSubmit(e, 'edit')}
+                    loading={loading}
+                    submitText={loading ? 'Оновлення...' : 'Оновити'}
+                >
+                    {renderFormField('Номер артикула', 'article_num')}
+                    {renderFormField('Назва артикула', 'name')}
+                    {renderFormField('Товщина (мм)', 'thickness', 'number', true, {
+                        step: "0.1",
+                        min: "0.1"
+                    })}
+                    {renderFormField('Тип матеріалу', 'material_type')}
+                    {renderFormField('URL файлу', 'file_url', 'text', false)}
+                </Modal>
             )}
 
             {/* Модальне вікно видалення */}
-            {isDeleteModalOpen && currentArticle && (
-                <div className="modal-overlay">
-                    <div className="modal-content delete-modal">
-                        <h2>Видалення артикула</h2>
-                        <p>Ви впевнені, що хочете видалити артикул?</p>
-                        <div className="article-preview">
-                            <strong>{currentArticle.article_num}</strong> - {currentArticle.name}
-                        </div>
+            {modalState.delete && currentArticle && (
+                <Modal
+                    title="Видалення артикула"
+                    onClose={() => closeModal('delete')}
+                    onSubmit={handleDelete}
+                    loading={loading}
+                    submitText={loading ? 'Видалення...' : 'Так, видалити'}
+                    type="delete"
+                >
+                    <p>Ви впевнені, що хочете видалити артикул?</p>
+                    <div className="article-preview">
+                        <strong>{currentArticle.article_num}</strong> - {currentArticle.name}
+                    </div>
+                </Modal>
+            )}
+        </div>
+    );
+}
+
+// Допоміжний компонент Modal для кращої інкапсуляції
+function Modal({
+                   title,
+                   children,
+                   onClose,
+                   onSubmit,
+                   loading,
+                   submitText,
+                   type = 'form'
+               }) {
+    return (
+        <div className="modal-overlay">
+            <div className={`modal-content ${type === 'delete' ? 'delete-modal' : ''}`}>
+                <h2>{title}</h2>
+                {type === 'form' ? (
+                    <form onSubmit={onSubmit}>
+                        {children}
                         <div className="modal-actions">
-                            <button 
-                                className="delete-confirm-button"
-                                onClick={handleDeleteConfirm}
-                                disabled={loading}
-                            >
-                                {loading ? 'Видалення...' : 'Так, видалити'}
+                            <button type="submit" className="submit-button" disabled={loading}>
+                                {submitText}
                             </button>
-                            <button 
-                                className="cancel-button"
-                                onClick={() => setIsDeleteModalOpen(false)}
-                            >
+                            <button type="button" className="cancel-button" onClick={onClose}>
                                 Скасувати
                             </button>
                         </div>
-                    </div>
-                </div>
-            )}
+                    </form>
+                ) : (
+                    <>
+                        {children}
+                        <div className="modal-actions">
+                            <button className="delete-confirm-button" onClick={onSubmit} disabled={loading}>
+                                {submitText}
+                            </button>
+                            <button className="cancel-button" onClick={onClose}>
+                                Скасувати
+                            </button>
+                        </div>
+                    </>
+                )}
+            </div>
         </div>
     );
 }

@@ -1,0 +1,619 @@
+/* NotificationCenter.css */
+.notification-center {
+    position: relative;
+    /*margin-left: 10px;*/
+    display: flex;
+}
+
+.notification-button {
+    position: relative;
+    background: #334155;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.3s ease;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.notification-button:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.notification-button:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ef4444;
+    color: white;
+    border-radius: 10px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 18px;
+    text-align: center;
+    border: 2px solid white;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 5px rgba(239, 68, 68, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+/* Dropdown стилі */
+.notification-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 450px;
+    max-height: 600px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    z-index: 1000;
+    overflow: hidden;
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Заголовок */
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.notification-header h3 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.connection-status {
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.connection-status > div {
+    margin-bottom: 4px;
+}
+
+.status-indicator {
+    margin-left: 6px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.status-indicator.active {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+.status-indicator.inactive {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.auto-refresh-btn {
+    margin-left: 6px;
+    padding: 2px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    background: transparent;
+    color: white;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.auto-refresh-btn.enabled:hover {
+    background: rgba(34, 197, 94, 0.3);
+}
+
+.auto-refresh-btn.disabled:hover {
+    background: rgba(239, 68, 68, 0.3);
+}
+
+.notification-actions {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.notification-actions button {
+    padding: 6px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    backdrop-filter: blur(10px);
+}
+
+.notification-actions button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.close-dropdown-btn {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    font-size: 16px !important;
+    padding: 4px 8px !important;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-dropdown-btn:hover {
+    background: rgba(239, 68, 68, 0.3) !important;
+    transform: scale(1.1) !important;
+}
+
+/* Список сповіщень */
+.notification-list {
+    max-height: 400px;
+    overflow-y: auto;
+    background: #f8fafc;
+}
+
+.notification-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Елемент сповіщення */
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    background: white;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item:hover {
+    background: #f8fafc;
+}
+
+.notification-item.unread {
+    background: #f0f9ff;
+    border-left: 3px solid #3b82f6;
+}
+
+.notification-item.unread:hover {
+    background: #e0f2fe;
+}
+
+.notification-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex: 1;
+    cursor: pointer;
+    min-width: 0;
+}
+
+.notification-icon {
+    font-size: 16px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.notification-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-title {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 4px;
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+.notification-message {
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 6px;
+    word-wrap: break-word;
+}
+
+.notification-time {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.delete-notification-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-notification-btn:hover {
+    background: #fecaca;
+    color: #dc2626;
+    transform: scale(1.1);
+}
+
+/* Повідомлення про відсутність сповіщень */
+.no-notifications {
+    text-align: center;
+    padding: 40px 20px;
+    color: #64748b;
+    font-size: 14px;
+    font-style: italic;
+    background: white;
+}
+
+/* Футер */
+.notification-footer {
+    padding: 12px 20px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+}
+
+.notification-stats {
+    text-align: center;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Тестові кнопки */
+.test-buttons {
+    display: flex;
+    gap: 8px;
+    margin-left: 10px;
+}
+
+.test-btn {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    color: #475569;
+}
+
+.test-btn:hover {
+    background: #e2e8f0;
+    transform: translateY(-1px);
+}
+
+/* Адаптивність */
+@media (max-width: 768px) {
+    .notification-center {
+        margin-left: 5px;
+    }
+
+    .notification-dropdown {
+        position: fixed;
+        top: 60px;
+        left: 10px;
+        right: 10px;
+        width: auto;
+        max-height: 70vh;
+        border-radius: 12px;
+    }
+
+    .notification-header {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .notification-actions {
+        align-self: flex-end;
+    }
+
+    .test-buttons {
+        margin-left: 5px;
+    }
+
+    .test-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .notification-dropdown {
+        width: 95vw;
+        left: 2.5vw;
+        right: 2.5vw;
+    }
+
+    .notification-item {
+        padding: 10px 12px;
+    }
+
+    .notification-content {
+        gap: 8px;
+    }
+
+    .notification-title {
+        font-size: 13px;
+    }
+
+    .notification-message {
+        font-size: 12px;
+    }
+
+    .notification-time {
+        font-size: 10px;
+    }
+}
+
+/* Стилі для затемнення фону */
+.notification-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.1);
+    z-index: 999;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Статуси для різних типів сповіщень */
+.notification-item[data-type="new_job"] .notification-icon {
+    color: #10b981;
+}
+
+.notification-item[data-type="job_completed"] .notification-icon {
+    color: #f59e0b;
+}
+
+.notification-item[data-type="system"] .notification-icon {
+    color: #3b82f6;
+}
+
+.notification-item[data-type="warning"] .notification-icon {
+    color: #ef4444;
+}
+
+/* Анімації для нових сповіщень */
+@keyframes highlightNew {
+    0% {
+        background: #dbeafe;
+        transform: translateX(-10px);
+    }
+    100% {
+        background: #f0f9ff;
+        transform: translateX(0);
+    }
+}
+
+.notification-item.new-notification {
+    animation: highlightNew 0.5s ease-out;
+}
+
+/* Стилі для стану завантаження */
+.notification-center.loading .notification-button {
+    background: #94a3b8;
+    cursor: not-allowed;
+}
+
+.notification-center.loading .notification-button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid transparent;
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Підсвічування при взаємодії */
+.notification-item:active {
+    transform: scale(0.98);
+}
+
+.notification-button:active {
+    transform: scale(0.95);
+}
+
+/* Стилі для довгих текстів */
+.notification-message {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.notification-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Ховер ефекти для всіх кнопок */
+button {
+    transition: all 0.2s ease-in-out;
+}
+
+button:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+/* Кастомний скроллбар для Firefox */
+.notification-list {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+/* Покращення доступності */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Темна тема (опціонально) */
+@media (prefers-color-scheme: dark) {
+    .notification-dropdown {
+        background: #1e293b;
+        border-color: #334155;
+        color: #f1f5f9;
+    }
+
+    .notification-header {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    }
+
+    .notification-list {
+        background: #0f172a;
+    }
+
+    .notification-item {
+        background: #1e293b;
+        border-bottom-color: #334155;
+    }
+
+    .notification-item:hover {
+        background: #334155;
+    }
+
+    .notification-item.unread {
+        background: #1e3a8a;
+    }
+
+    .notification-item.unread:hover {
+        background: #1e40af;
+    }
+
+    .notification-title {
+        color: #f1f5f9;
+    }
+
+    .notification-message {
+        color: #cbd5e1;
+    }
+
+    .notification-time {
+        color: #94a3b8;
+    }
+
+    .no-notifications {
+        background: #1e293b;
+        color: #94a3b8;
+    }
+
+    .notification-footer {
+        background: #0f172a;
+        border-top-color: #334155;
+    }
+
+    .test-btn {
+        background: #334155;
+        border-color: #475569;
+        color: #cbd5e1;
+    }
+
+    .test-btn:hover {
+        background: #475569;
+    }
+}

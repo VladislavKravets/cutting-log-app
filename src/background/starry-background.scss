@@ -1,0 +1,138 @@
+// starry-background.scss
+
+// n - это количество требуемых звезд
+@function multiple-box-shadow ($n) {
+  $value: '#{random(2000)}px #{random(2000)}px #FFF';
+  @for $i from 2 through $n {
+    $value: '#{$value} , #{random(2000)}px #{random(2000)}px #FFF';
+  }
+  @return unquote($value);
+}
+
+$shadows-small:   multiple-box-shadow(700);
+$shadows-medium: multiple-box-shadow(200);
+$shadows-big:     multiple-box-shadow(100);
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  //background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+  // overflow: hidden; // Убедитесь, что этот строчку удалено/закомментировано для скролла
+}
+
+.star-field-container {
+  position: fixed; // Используйте fixed, чтобы звезды всегда были на фоне, даже при скролле
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; // Здесь overflow: hidden; должно быть, чтобы обрезать звезды, выходящие за границы
+  pointer-events: none;
+  z-index: -1; // Убедитесь, что фон находится позади всего контента
+  background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+}
+
+// ====================================================================
+// Стили для звездных слоев
+// Теперь каждый слой будет иметь родительский элемент для анимации
+// ====================================================================
+
+// Базовые стили для всех контейнеров звезд
+.stars-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 200%; /* Удвоить высоту, чтобы вместить себя и дубликат */
+}
+
+// Звезды - это 1px точки, расположенные с помощью box-shadow
+.stars-base {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  background: transparent;
+}
+
+/* Слой 1: Самые маленькие и быстрые звезды */
+#stars-wrapper-1 {
+  @extend .stars-layer; /* Наследуем базовые свойства */
+  animation: animStar 50s linear infinite;
+
+  .stars-base-1 {
+    @extend .stars-base; /* Наследуем базовые свойства звезд */
+    box-shadow: $shadows-small;
+  }
+}
+
+/* Слой 2: Средние звезды */
+#stars-wrapper-2 {
+  @extend .stars-layer;
+  animation: animStar 100s linear infinite;
+
+  .stars-base-2 {
+    @extend .stars-base;
+    width: 2px; /* Переопределяем размер */
+    height: 2px;
+    box-shadow: $shadows-medium;
+  }
+}
+
+/* Слой 3: Самые большие и медленные звезды */
+#stars-wrapper-3 {
+  @extend .stars-layer;
+  animation: animStar 150s linear infinite;
+
+  .stars-base-3 {
+    @extend .stars-base;
+    width: 3px; /* Переопределяем размер */
+    height: 3px;
+    box-shadow: $shadows-big;
+  }
+}
+
+
+// ====================================================================
+// Стили для заголовка
+// ====================================================================
+#title {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+
+  color: #FFF;
+  text-align: center;
+  font-family: 'lato', sans-serif;
+  font-weight: 300;
+  font-size: 50px;
+  letter-spacing: 10px;
+
+  margin-top: -60px;
+  padding-left: 10px;
+  z-index: 10;
+  pointer-events: auto; /* Заголовок должен быть интерактивным */
+
+  span {
+    background: -webkit-linear-gradient(white, #38495a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+  }
+}
+
+// ====================================================================
+// Keyframes для анимации
+// ====================================================================
+@keyframes animStar {
+  from {
+    transform: translateY(0%); // Начинаем с 0
+  }
+  to {
+    transform: translateY(-50%); // Перемещаемся ровно на половину высоты (200% -> -100% от исходной высоты, но так как слой 200%, то это -50% от 200%)
+  }
+}

@@ -1,232 +1,633 @@
-/* src/components/CuttingJobForm.css */
-
-/* Основний контейнер та типографія */
-.job-form-container {
-    max-width: 900px;
-    margin: 30px auto;
-    padding: 30px;
-    background-color: #f9f9f9;
+/* CuttingJobForm.css */
+.cutting-form {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    background: #F0F8FF;
+    min-height: 100vh;
+    font-family: 'Segoe UI', system-ui, sans-serif;
     border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: black;
 }
 
-h1 {
-    color: #004d99;
-    text-align: center;
-    margin-bottom: 25px;
-    border-bottom: 2px solid #e0e0e0;
-    padding-bottom: 10px;
-}
-
-h2 {
-    color: #333;
-    font-size: 1.3em;
-    margin-top: 25px;
-    margin-bottom: 15px;
-    padding-left: 10px;
-    border-left: 4px solid #007bff;
-}
-
-/* Секція введення даних */
-label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #555;
-    font-size: 0.95em;
-}
-
-input[type="date"], input[type="number"], input[type="text"], select, textarea {
-    width: 100%;
-    padding: 10px;
-    margin-top: 4px;
-    /* Зняти margin-bottom тут, щоб контролювати його через обгортку */
-    margin-bottom: 0; 
-    border: 1px solid #c0c0c0;
-    border-radius: 6px;
-    box-sizing: border-box;
-    transition: border-color 0.3s;
-}
-
-input:focus, select:focus, textarea:focus {
-    border-color: #007bff;
-    outline: none;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
-}
-
-textarea {
-    resize: vertical;
-    margin-bottom: 15px; /* Залишаємо для не-Flex полів */
-}
-
-/* Рядок для додавання артикулів (Flexbox) */
-.input-row {
+.cutting-form__header {
     display: flex;
-    gap: 20px;
-    align-items: flex-end; /* Вирівнює всі елементи по нижньому краю */
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.cutting-form__title {
+    color: #1e293b;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.cutting-form__badge {
+    font-size: 24px;
+    background: #3b82f6;
+    color: #e2e8f0;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+/* Секції */
+.cutting-form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 0;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+}
+
+.cutting-form-section__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    background: #f8fafc;
+}
+
+.cutting-form-section__title {
+    color: #334155;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.cutting-form-section__counter {
+    background: #3b82f6;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.cutting-form-section__content {
+    padding: 24px;
+}
+
+/* Поля форми */
+.cutting-form-field {
     margin-bottom: 20px;
 }
 
-/* Контейнер для поля пошуку та кнопки "Змінити" + Autocomplete */
-.search-input-wrapper {
+.cutting-form-field--inline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 0;
+}
+
+.cutting-form-field__label {
+    display: block;
+    margin-bottom: 6px;
+    color: #475569;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.cutting-form-field__input,
+.cutting-form-field__textarea,
+.cutting-form-field__select {
+    width: 50%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s;
+    background: white;
+}
+
+.cutting-form-field__input--small {
+    width: 120px;
+}
+
+.cutting-form-field__input:focus,
+.cutting-form-field__textarea:focus,
+.cutting-form-field__select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.cutting-form-field__textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+/* Пошук */
+.cutting-form-search {
     position: relative;
-    flex: 1.5; /* Даємо більше місця для поля пошуку */
-    min-width: 250px;
+    margin-bottom: 20px;
 }
 
-.search-input-wrapper label {
-    margin-bottom: 0; /* Скидаємо для вирівнювання */
-}
-.search-input-wrapper input[type="text"] {
-    margin-bottom: 15px; /* Додаємо margin для відділення від інших елементів, якщо вони є */
-}
-
-/* Поле кількості */
-.input-row > label {
-    flex: 0.5; /* Даємо менше місця для кількості */
-    min-width: 100px;
-    margin-bottom: 0; 
-}
-.input-row > label input[type="number"] {
+.cutting-form-search__controls {
+    /* Використовуємо Flexbox для розташування в один рядок */
+    display: flex;
+    /* Вирівнюємо елементи по вертикалі (по центру) */
+    align-items: center;
+    /* Розміщуємо елементи по центру контейнера горизонтально */
+    justify-content: center;
+    /* Додаємо невеликий проміжок між елементами */
+    gap: 16px;
+    /* Додаємо зовнішній відступ, якщо потрібно відсунути від країв секції */
     margin-bottom: 15px;
+
+    /* *ПРИМІТКА:* Можливо, вам знадобиться скоригувати ширину полів
+       у .cutting-form-field__input, щоб вони не займали всю доступну ширину.
+    */
 }
 
-
-/* Стилізація кнопок */
-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background-color 0.3s, opacity 0.3s;
-    white-space: nowrap;
+/* Приклад, як можна скоригувати ширину, щоб вони були більш компактними */
+.cutting-form-field--inline .cutting-form-field__input,
+.cutting-form-field--inline .cutting-form-field__select {
+    /* Змініть '50%' на 'auto' або фіксовану ширину, якщо вони занадто великі */
+    width: auto !important;
+    min-width: 120px; /* Мінімальна ширина для читабельності */
 }
 
-.add-button {
-    background-color: #28a745;
-    color: white;
-    min-width: 150px;
-    margin-bottom: 15px; /* Вирівнюємо по низу дорівнюючи інпутам */
+.articles-header {
+    text-align: center; /* Центрування заголовка */
+    margin-bottom: 20px;
 }
 
-.add-button:hover:not(:disabled) {
-    background-color: #218838;
-}
-
-.submit-button {
-    width: 100%;
-    padding: 15px;
-    margin-top: 30px;
-    background-color: #007bff;
-    color: white;
-    font-size: 1.1em;
-}
-
-/* Стилізація кнопки "Змінити" (в основній формі) */
-.remove-selection-button {
-    position: absolute;
-    bottom: 18%;
-    right: 1px; 
-    padding: 4px 8px; /* Зробити її меншою */
-    font-size: 0.8em;
-    background-color: #e0e0e0;
-    color: #333;
-    border-radius: 4px;
-    z-index: 10;
-    line-height: 1;
-    border: 1px solid #ccc;
-}
-
-.remove-selection-button:hover {
-    background-color: #ccc;
-}
-
-
-/* Стилі для Autocomplete (Пошук артикулів) */
-.autocomplete-dropdown {
-    position: absolute;
-    top: 100%; 
-    left: 0;
-    z-index: 20; 
-    width: 100%; 
-    max-height: 250px;
-    overflow-y: auto;
-    border: 1px solid #007bff;
-    background-color: white;
-    border-radius: 6px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-    /* Компенсуємо відступ input */
-    transform: translateY(-15px); 
-}
-
-/* ... (Стилі autocomplete-item та article-info - без змін) ... */
-
-/* Стиль для кнопки створення нового артикула (в основній формі) */
-.search-no-results {
+.cutting-form-search__results {
     position: absolute;
     top: 100%;
     left: 0;
-    z-index: 20;
-    width: 100%;
-    padding: 10px;
-    background-color: #fff3cd; 
-    border: 1px solid #ffc107;
+    right: 0;
+    background: white;
+    border: 1px solid #e2e8f0;
     border-radius: 6px;
-    transform: translateY(-15px); /* Компенсуємо відступ input */
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.cutting-form-search__item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.2s;
+}
+
+.cutting-form-search__item:hover {
+    background: #f8fafc;
+}
+
+.cutting-form-search__item:last-child {
+    border-bottom: none;
+}
+
+.cutting-form-search__item-number {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.cutting-form-search__item-name {
+    color: #475569;
+    font-size: 14px;
+    margin: 2px 0;
+}
+
+.cutting-form-search__item-details {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.cutting-form-search__empty {
+    text-align: center;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 6px;
+    border: 1px dashed #cbd5e1;
+}
+
+.cutting-form-search__empty-text {
+    color: #64748b;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+/* Додавання артикулів */
+.cutting-form-add {
+    display: flex;
+    gap: 16px;
+    align-items: end;
+    /*margin-bottom: 16px;*/
+}
+
+.cutting-form-selected {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 6px;
+}
+
+.cutting-form-selected__icon {
+    background: #0ea5e9;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.cutting-form-selected__info {
+    flex: 1;
+    font-size: 14px;
+}
+
+.cutting-form-selected__details {
+    display: block;
+    color: #64748b;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+/* Таблиця */
+.cutting-form-table {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.cutting-form-table__table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.cutting-form-table__head {
+    background: #f1f5f9;
+}
+
+.cutting-form-table__header {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #475569;
+    font-size: 14px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.cutting-form-table__body {
+    background: white;
+}
+
+.cutting-form-table__row {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.2s;
+}
+
+.cutting-form-table__row:hover {
+    background: #f8fafc;
+}
+
+.cutting-form-table__row:last-child {
+    border-bottom: none;
+}
+
+.cutting-form-table__cell {
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #475569;
+}
+
+.cutting-form-table__cell--number {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.cutting-form-table__cell--quantity {
+    text-align: center;
+    font-weight: 600;
+    color: #059669;
+}
+
+.cutting-form-table__cell--actions {
     text-align: center;
 }
 
-.create-new-button {
-    background-color: #ffc107; 
-    color: #343a40;
-    padding: 8px 15px;
-    font-size: 0.9em;
-    margin-top: 5px;
+/* Кнопки */
+.cutting-form-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 }
 
-/* --- Модальне вікно --- */
-.modal-overlay {
+.cutting-form-btn--small {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.cutting-form-btn--primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.cutting-form-btn--primary:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+.cutting-form-btn--secondary {
+    background: #64748b;
+    color: white;
+}
+
+.cutting-form-btn--secondary:hover:not(:disabled) {
+    background: #475569;
+}
+
+.cutting-form-btn--success {
+    background: #10b981;
+    color: white;
+}
+
+.cutting-form-btn--success:hover:not(:disabled) {
+    background: #059669;
+}
+
+.cutting-form-btn--danger {
+    background: #ef4444;
+    color: white;
+}
+
+.cutting-form-btn--danger:hover:not(:disabled) {
+    background: #dc2626;
+}
+
+.cutting-form-btn--add {
+    background: darkgreen;
+    color: white;
+}
+
+.cutting-form-btn--add:hover:not(:disabled) {
+    background: green;
+}
+
+.cutting-form-btn--create {
+    background: #f59e0b;
+    color: white;
+}
+
+.cutting-form-btn--create:hover:not(:disabled) {
+    background: #d97706;
+}
+
+.cutting-form-btn--remove {
+    background: #ef4444;
+    color: white;
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.cutting-form-btn--remove:hover:not(:disabled) {
+    background: #dc2626;
+}
+
+.cutting-form-btn--submit {
+    background: #059669;
+    color: white;
+    padding: 12px 40px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.cutting-form-btn--submit:hover:not(:disabled) {
+    background: #047857;
+}
+
+.cutting-form-btn:disabled {
+    background: #cbd5e1;
+    color: #64748b;
+    cursor: not-allowed;
+}
+
+/* Успішне створення */
+.cutting-form-success {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.cutting-form-success__icon {
+    font-size: 24px;
+    margin-top: 2px;
+}
+
+.cutting-form-success__content {
+    flex: 1;
+}
+
+.cutting-form-success__title {
+    color: #166534;
+    margin: 0 0 8px 0;
+    font-size: 18px;
+}
+
+.cutting-form-success__text {
+    color: #166534;
+    margin: 0 0 12px 0;
+    font-size: 14px;
+}
+
+.cutting-form-success__note {
+    color: #65a30d;
+    font-size: 12px;
+    margin: 8px 0 0 0;
+}
+
+/* Порожній стан */
+.cutting-form-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #64748b;
+}
+
+.cutting-form-empty__icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.cutting-form-empty__text {
+    font-size: 16px;
+    margin: 0;
+    font-style: italic;
+}
+
+/* Роздільник */
+.cutting-form-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 32px 0;
+}
+
+/* Відправка */
+.cutting-form-submit {
+    text-align: center;
+    margin-top: 32px;
+}
+
+/* Модальне вікно */
+.cutting-form-modal {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    padding: 20px;
 }
 
-.modal-content {
+.cutting-form-modal__content {
     background: white;
-    padding: 30px;
-    border-radius: 8px;
-    width: 90%;
+    padding: 32px;
+    border-radius: 12px;
+    width: 100%;
     max-width: 500px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
 }
 
-.modal-actions {
+.cutting-form-modal__title {
+    color: #1e293b;
+    margin: 0 0 24px 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.cutting-form-modal__form {
     display: flex;
-    justify-content: flex-end; /* Вирівнюємо кнопки праворуч */
-    margin-top: 25px;
-    gap: 10px;
+    flex-direction: column;
+    gap: 20px;
 }
 
-.modal-actions button {
-    width: auto;
-    min-width: 120px;
+.cutting-form-modal__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
-.cancel-button {
-    background-color: #6c757d;
-    color: white;
+.cutting-form-modal__label {
+    color: #475569;
+    font-weight: 500;
+    font-size: 14px;
 }
 
-.cancel-button:hover {
-    background-color: #5a6268;
+.cutting-form-modal__input {
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.cutting-form-modal__input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.cutting-form-modal__actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.cutting-form-modal__actions .cutting-form-btn {
+    flex: 1;
+}
+
+/* Адаптивність */
+@media (max-width: 768px) {
+    .cutting-form {
+        padding: 16px;
+    }
+
+    .cutting-form__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .cutting-form__title {
+        font-size: 24px;
+    }
+
+    .cutting-form-search__controls {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .cutting-form-add {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .cutting-form-field--inline {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .cutting-form-field__input--small {
+        width: 100%;
+    }
+
+    .cutting-form-section__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .cutting-form-modal__content {
+        margin: 20px;
+        padding: 24px;
+    }
+
+    .cutting-form-modal__actions {
+        flex-direction: column;
+    }
+
+    .cutting-form-table {
+        overflow-x: auto;
+    }
+
+    .cutting-form-table__table {
+        min-width: 600px;
+    }
 }

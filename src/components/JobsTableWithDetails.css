@@ -1,521 +1,691 @@
-/* JobsTableWithDetails.css */
-.jobs-table-container {
-  padding: 20px;
-  background-color: #f5f5f5;
-  min-height: 100vh;
+/* Основний контейнер журналу */
+.cutting-journal {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+    background: #F0F8FF;
+    min-height: 100vh;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    border-radius: 15px;
 }
 
-.jobs-table-container h2 {
-  color: #333;
-  margin-bottom: 20px;
-  text-align: center;
+/* Заголовок */
+.journal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.journal-header h1 {
+    color: #1e293b;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.journal-copy-link {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.journal-copy-link:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
 }
 
 /* Фільтри */
-.filters-section {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
+.journal-filters {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e2e8f0;
 }
 
-.filter-row {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 15px;
-  flex-wrap: wrap;
-  align-items: flex-end;
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
 }
 
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  min-width: 140px;
-  flex: 1;
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.filter-group label {
-  font-weight: bold;
-  margin-bottom: 5px;
-  color: #555;
-  font-size: 13px;
+.filter-field label {
+    color: #475569;
+    font-weight: 600;
+    font-size: 14px;
 }
 
-.filter-group input,
-.filter-group select {
-  padding: 8px 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 13px;
-  min-width: 120px;
+.filter-input, .filter-select {
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background: white;
+    color: #334155;
 }
 
-.filter-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: 10px;
+.filter-input:focus, .filter-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    /*width: 100%;*/
 }
 
-.clear-filters,
-.refresh-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
+/* Контроли */
+.journal-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid #f1f5f9;
 }
 
-.clear-filters {
-  background-color: #6c757d;
-  color: white;
+.results-summary {
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
 }
 
-.clear-filters:hover {
-  background-color: #545b62;
+.loading-indicator {
+    color: #3b82f6;
+    font-style: italic;
 }
 
-.refresh-btn {
-  background-color: #007bff;
-  color: white;
+.controls-group {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.page-size-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-size-control label {
+    color: #475569;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.page-size-select {
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .refresh-btn:hover {
-  background-color: #0056b3;
+    background: #dbeafe;
+    border-color: #3b82f6;
 }
 
-/* Список завдань */
-.jobs-list {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  overflow: hidden;
+.clear-filters-btn:hover {
+    background: #fecaca;
+    border-color: #dc2626;
 }
 
-.job-item {
-  border-bottom: 1px solid #e9ecef;
+/* Картки завдань */
+.journal-content {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e2e8f0;
 }
 
-.job-item:last-child {
-  border-bottom: none;
+.jobs-container {
+    padding: 0;
 }
 
-/* Заголовок завдання */
-.job-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
-  background-color: #f8f9fa;
-  cursor: pointer;
-  transition: background-color 0.2s;
+.journal-job-card {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.2s;
 }
 
-.job-header:hover {
-  background-color: #e9ecef;
+.journal-job-card:last-child {
+    border-bottom: none;
+}
+
+.journal-job-card:hover {
+    background: #f8fafc;
+}
+
+/* Заголовок картки */
+.job-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.job-card-header:hover {
+    background: #f1f5f9;
 }
 
 .job-main-info {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  flex-wrap: wrap;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
 }
 
-.expand-icon {
-  font-size: 12px;
-  color: #6c757d;
-  min-width: 15px;
+.expand-indicator {
+    color: #64748b;
+    font-weight: bold;
+    width: 16px;
 }
 
-.job-id {
-  font-weight: bold;
-  color: #495057;
-  font-size: 14px;
-}
-
-.status-badge {
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: bold;
-  text-transform: uppercase;
-}
-
-.status-active {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.status-completed {
-  background-color: #d1ecf1;
-  color: #0c5460;
-}
-
-.status-pending {
-  background-color: #fff3cd;
-  color: #856404;
-}
-
-.status-cancelled {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-.job-date {
-  color: #6c757d;
-  font-size: 13px;
-}
-
-.job-files {
-  color: #007bff;
-  font-size: 13px;
-  font-weight: 500;
-  background-color: #e7f3ff;
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-
-.job-totals {
-  display: flex;
-  gap: 15px;
-  font-size: 13px;
-  color: #495057;
-  flex-wrap: wrap;
-}
-
-.job-totals span {
-  font-weight: 500;
-}
-
-/* Деталі завдання */
-.job-details {
-  background-color: #fafafa;
-  border-top: 1px solid #e9ecef;
-  padding: 20px;
-}
-
-.details-section,
-.logs-section {
-  margin-bottom: 25px;
-}
-
-.details-section h4,
-.logs-section h4 {
-  color: #495057;
-  margin-bottom: 15px;
-  font-size: 16px;
-  border-bottom: 2px solid #007bff;
-  padding-bottom: 5px;
-}
-
-.details-table,
-.logs-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  margin-bottom: 15px;
-}
-
-.details-table th,
-.logs-table th {
-  background-color: #e9ecef;
-  padding: 10px 12px;
-  text-align: left;
-  font-weight: bold;
-  color: #495057;
-  border-bottom: 2px solid #dee2e6;
-  font-size: 11px;
-}
-
-.details-table td,
-.logs-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid #dee2e6;
-  font-size: 12px;
-}
-
-.details-table tbody tr:hover,
-.logs-table tbody tr:hover {
-  background-color: #f8f9fa;
-}
-
-.article-info {
-  min-width: 120px;
-}
-
-.article-name {
-  font-weight: 500;
-  color: #495057;
-  font-size: 12px;
-}
-
-.article-id {
-  font-size: 10px;
-  color: #6c757d;
-}
-
-.rejection-warning {
-  color: #dc3545;
-  font-weight: bold;
-}
-
-.consumption {
-  font-weight: bold;
-  color: #28a745;
-}
-
-.file-link {
-  color: #007bff;
-  text-decoration: none;
-  font-size: 12px;
-}
-
-.file-link:hover {
-  text-decoration: underline;
-}
-
-/* Підсумки */
-.details-totals {
-  background-color: #e9ecef;
-  font-weight: bold;
-}
-
-.details-totals td {
-  padding: 8px 12px;
-  border-top: 2px solid #dee2e6;
-  font-size: 12px;
-}
-
-/* Нотатки */
-.job-notes {
-  margin-top: 15px;
-  padding: 12px 15px;
-  background-color: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 4px;
-  font-size: 14px;
-  color: #856404;
-}
-
-.no-details {
-  text-align: center;
-  padding: 20px;
-  color: #6c757d;
-  font-style: italic;
-}
-
-.loading, .no-data {
-  text-align: center;
-  padding: 40px;
-  font-size: 18px;
-  color: #6c757d;
-}
-
-/* Адаптивність */
-@media (max-width: 1200px) {
-  .filter-group {
-    min-width: calc(25% - 15px);
-  }
-}
-
-@media (max-width: 768px) {
-  .filter-row {
-    flex-direction: column;
-  }
-  
-  .filter-group {
-    min-width: 100%;
-  }
-  
-  .job-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  
-  .job-totals {
-    width: 100%;
-    justify-content: space-between;
-  }
-  
-  .job-details {
-    padding: 10px;
-    overflow-x: auto;
-  }
-  
-  .details-table,
-  .logs-table {
-    min-width: 1000px;
-  }
-}
-
-/* Метрики в заголовку завдання */
-.job-metrics {
-  flex: 1;
-  margin: 0 20px;
-  padding: 5px 0;
-}
-
-.metrics-row {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 5px;
-  flex-wrap: wrap;
-}
-
-.metric-item {
-  font-size: 12px;
-  color: #555;
-  white-space: nowrap;
-}
-
-.metric-item strong {
-  color: #333;
-}
-
-.metric-item.consumption {
-  color: #28a745;
-  font-weight: bold;
-}
-
-/* Адаптивність для метрик */
-@media (max-width: 1200px) {
-  .job-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .job-metrics {
-    margin: 10px 0;
-    width: 100%;
-  }
-  
-  .metrics-row {
-    gap: 10px;
-  }
-}
-
-@media (max-width: 768px) {
-  .metric-item {
-    font-size: 11px;
-  }
-  
-  .metrics-row {
-    flex-direction: column;
-    gap: 3px;
-  }
-}
-
-.link-actions {
-    margin-bottom: 20px;
-    text-align: right;
-}
-
-.copy-link-btn {
-    padding: 8px 16px;
-    background-color: #409eff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s ease;
-}
-
-.copy-link-btn:hover {
-    background-color: #337ecc;
+.job-identifier {
+    font-weight: 600;
+    color: #1e293b;
 }
 
 .job-link {
-    color: #409eff;
+    color: #3b82f6;
     text-decoration: none;
     font-weight: 600;
-    transition: color 0.3s ease;
 }
 
 .job-link:hover {
-    color: #337ecc;
     text-decoration: underline;
 }
 
-.apply-filters {
-  padding: 8px 16px;
-  background-color: #67c23a;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
+.job-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
-.apply-filters:hover {
-  background-color: #5daf34;
+.job-status-в-роботі { background: #dbeafe; color: #1e40af; }
+.job-status-виконано { background: #d1fae5; color: #065f46; }
+.job-status-в-черзі { background: #fef3c7; color: #92400e; }
+.job-status-скасовано { background: #fecaca; color: #991b1b; }
+
+.job-dates {
+    display: flex;
+    gap: 16px;
+    color: #64748b;
+    font-size: 14px;
 }
 
-/* Плавні переходи для таблиці */
+.job-files {
+    color: #475569;
+    font-size: 14px;
+}
+
+.job-summary {
+    display: flex;
+    gap: 16px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.summary-item {
+    padding: 4px 8px;
+    background: #f1f5f9;
+    border-radius: 4px;
+    color: #475569;
+}
+
+/* Деталі картки */
+.job-card-details {
+    padding: 0 24px 24px 24px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+}
+
+.details-panel, .logs-panel, .programs-panel {
+    margin-bottom: 24px;
+}
+
+.panel-title {
+    color: #1e293b;
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Таблиці */
 .table-wrapper {
-  position: relative;
-  transition: all 0.3s ease;
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
 }
 
-.table-content.loading {
-  opacity: 0.6;
-  pointer-events: none;
+.details-data-table, .logs-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: white;
 }
 
-.table-loading {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 10;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.details-data-table th, .logs-data-table th {
+    background: #f8fafc;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #475569;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
 }
 
-.loading-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #f3f3f3;
-  border-top: 2px solid #409eff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.details-data-table td, .logs-data-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #475569;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.details-data-table tr:last-child td, .logs-data-table tr:last-child td {
+    border-bottom: none;
 }
 
-/* Плавні переходи для елементів таблиці */
-.job-item {
-  transition: all 0.3s ease;
+/* Специфічні стилі для таблиць */
+.article-data {
+    min-width: 200px;
 }
 
-.job-header {
-  transition: all 0.2s ease;
+.article-title {
+    font-weight: 600;
+    color: #1e293b;
 }
 
-.job-details {
-  transition: all 0.3s ease;
+.article-number {
+    color: #64748b;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
 }
 
-/* Плавне зникнення/поява при фільтрації */
-.jobs-list {
-  transition: opacity 0.3s ease;
+.has-rejection {
+    color: #dc2626;
+    font-weight: 600;
+    background: #fef2f2;
+    padding: 2px 6px;
+    border-radius: 4px;
 }
 
-.table-wrapper.loading .jobs-list {
-  opacity: 0.7;
+.file-download-link {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.file-download-link:hover {
+    text-decoration: underline;
+}
+
+.details-totals-row {
+    background: #f8fafc;
+    font-weight: 600;
+}
+
+.totals-label {
+    color: #1e293b;
+}
+
+.efficiency-cell {
+    color: #059669;
+    font-weight: 600;
+}
+
+/* Логи */
+.logs-data-table th, .logs-data-table td {
+    font-size: 13px;
+    padding: 8px 12px;
+}
+
+.cut-date, .last-update {
+    white-space: nowrap;
+}
+
+.energy-consumption {
+    font-weight: 600;
+    color: #059669;
+}
+
+/* Програми */
+.programs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.program-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.program-file {
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.program-created {
+    color: #64748b;
+    font-size: 13px;
+}
+
+/* Нотатки */
+.job-notes-panel {
+    padding: 16px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+}
+
+.notes-content {
+    margin-left: 8px;
+}
+
+/* Пагінація */
+.journal-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-top: 1px solid #e2e8f0;
+    background: white;
+}
+
+.pagination-info {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.pagination-btn {
+    padding: 8px 16px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.pagination-btn:disabled {
+    color: #cbd5e1;
+    cursor: not-allowed;
+}
+
+.pagination-active {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+/* Повідомлення про відсутність даних */
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: #64748b;
+    font-size: 16px;
+    font-style: italic;
+}
+
+/* Адаптивність */
+@media (max-width: 1024px) {
+    .filters-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .job-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .job-main-info {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .cutting-journal {
+        padding: 16px;
+    }
+
+    .journal-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .filters-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .journal-controls {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .controls-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .job-main-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .job-dates {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .job-summary {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .journal-pagination {
+        flex-direction: column;
+        gap: 16px;
+        align-items: center;
+    }
+
+    .pagination-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .table-wrapper {
+        font-size: 12px;
+    }
+
+    .details-data-table th,
+    .details-data-table td,
+    .logs-data-table th,
+    .logs-data-table td {
+        padding: 8px 12px;
+    }
+}
+
+/* Адаптивна таблица без горизонтального скролла */
+.logs-data-table.responsive-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    background: white;
+    table-layout: fixed; /* Фіксована ширина колонок */
+}
+
+.logs-data-table.responsive-table th,
+.logs-data-table.responsive-table td {
+    padding: 8px 6px;
+    text-align: center;
+    border-bottom: 1px solid #f1f5f9;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Ширини колонок */
+.logs-data-table.responsive-table th:nth-child(1),
+.logs-data-table.responsive-table td:nth-child(1) { width: 10%; } /* Програма */
+.logs-data-table.responsive-table th:nth-child(2),
+.logs-data-table.responsive-table td:nth-child(2) { width: 8%; }  /* Оператор */
+.logs-data-table.responsive-table th:nth-child(3),
+.logs-data-table.responsive-table td:nth-child(3) { width: 8%; }  /* Дата різки */
+.logs-data-table.responsive-table th:nth-child(4),
+.logs-data-table.responsive-table td:nth-child(4) { width: 12%; } /* Остання зміна */
+.logs-data-table.responsive-table th:nth-child(5),
+.logs-data-table.responsive-table td:nth-child(5) { width: 7%; }  /* Підготовка */
+.logs-data-table.responsive-table th:nth-child(6),
+.logs-data-table.responsive-table td:nth-child(6) { width: 7%; }  /* Різка */
+.logs-data-table.responsive-table th:nth-child(7),
+.logs-data-table.responsive-table td:nth-child(7) { width: 7%; }  /* Кисень */
+.logs-data-table.responsive-table th:nth-child(8),
+.logs-data-table.responsive-table td:nth-child(8) { width: 6%; }  /* Повітря */
+.logs-data-table.responsive-table th:nth-child(9),
+.logs-data-table.responsive-table td:nth-child(9) { width: 9%; }  /* Старт лічильник */
+.logs-data-table.responsive-table th:nth-child(10),
+.logs-data-table.responsive-table td:nth-child(10) { width: 9%; } /* Кінець лічильник */
+.logs-data-table.responsive-table th:nth-child(11),
+.logs-data-table.responsive-table td:nth-child(11) { width: 8%; } /* Енергія */
+
+/* Стилі для заголовків */
+.logs-data-table.responsive-table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #475569;
+    font-size: 11px;
+    white-space: normal;
+    line-height: 1.2;
+}
+
+/* Адаптивність для мобільних пристроїв */
+@media (max-width: 1200px) {
+    .logs-data-table.responsive-table {
+        font-size: 11px;
+    }
+
+    .logs-data-table.responsive-table th,
+    .logs-data-table.responsive-table td {
+        padding: 6px 4px;
+    }
+}
+
+@media (max-width: 768px) {
+    .logs-data-table.responsive-table {
+        font-size: 10px;
+    }
+
+    .logs-data-table.responsive-table th,
+    .logs-data-table.responsive-table td {
+        padding: 4px 3px;
+    }
+
+    /* Зменшуємо ширини для дуже малих екранів */
+    .logs-data-table.responsive-table th:nth-child(1),
+    .logs-data-table.responsive-table td:nth-child(1) { width: 12%; }
+    .logs-data-table.responsive-table th:nth-child(4),
+    .logs-data-table.responsive-table td:nth-child(4) { width: 14%; }
+}
+
+/* Для дуже малих екранів - змінюємо орієнтацію */
+@media (max-width: 480px) {
+    .logs-panel {
+        overflow: visible;
+    }
+
+    .logs-data-table.responsive-table {
+        display: block;
+        font-size: 12px;
+    }
+
+    .logs-data-table.responsive-table thead {
+        display: none;
+    }
+
+    .logs-data-table.responsive-table tbody,
+    .logs-data-table.responsive-table tr {
+        display: block;
+    }
+
+    .logs-data-table.responsive-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .logs-data-table.responsive-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #475569;
+        min-width: 120px;
+    }
+
+    /* Додаємо мітки для мобільних */
+    .logs-data-table.responsive-table td:nth-child(1)::before { content: "Програма:"; }
+    .logs-data-table.responsive-table td:nth-child(2)::before { content: "Оператор:"; }
+    .logs-data-table.responsive-table td:nth-child(3)::before { content: "Дата різки:"; }
+    .logs-data-table.responsive-table td:nth-child(4)::before { content: "Остання зміна:"; }
+    .logs-data-table.responsive-table td:nth-child(5)::before { content: "Підготовка (хв):"; }
+    .logs-data-table.responsive-table td:nth-child(6)::before { content: "Різка (хв):"; }
+    .logs-data-table.responsive-table td:nth-child(7)::before { content: "Кисень МПа:"; }
+    .logs-data-table.responsive-table td:nth-child(8)::before { content: "Повітря:"; }
+    .logs-data-table.responsive-table td:nth-child(9)::before { content: "Старт лічильник:"; }
+    .logs-data-table.responsive-table td:nth-child(10)::before { content: "Кінець лічильник:"; }
+    .logs-data-table.responsive-table td:nth-child(11)::before { content: "Енергія (кВт):"; }
 }

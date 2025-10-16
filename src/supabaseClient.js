@@ -1,6 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = 'https://teyxeoapdsvqdsidoiwh.supabase.co'; // Например: 'https://xyz.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRleXhlb2FwZHN2cWRzaWRvaXdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4NzgyOTIsImV4cCI6MjA3NDQ1NDI5Mn0.7XYLNmcuymHhi34QJh5PvXGm9cEXqDxd5GWTYGvdm6o'; // Например: 'eyJhbGciOiJIU...'
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+const supabaseKey = process.env.REACT_APP_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+// Використовуйте anon key для клієнтського коду
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
