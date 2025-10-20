@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/cutting-log-app/static/css/main.d2925a14.css",
-    "main.js": "/cutting-log-app/static/js/main.5abc08d5.js",
+    "main.css": "/cutting-log-app/static/css/main.cc307372.css",
+    "main.js": "/cutting-log-app/static/js/main.9bb14951.js",
     "static/media/logo2.ico": "/cutting-log-app/static/media/logo2.e9b3a7a5a1e876f5c70b.ico",
     "static/media/logo3.ico": "/cutting-log-app/static/media/logo3.9d7004c266c4146e37e8.ico",
     "static/media/logo.ico": "/cutting-log-app/static/media/logo.f2615a31d21592840916.ico",
     "index.html": "/cutting-log-app/index.html",
-    "main.d2925a14.css.map": "/cutting-log-app/static/css/main.d2925a14.css.map",
-    "main.5abc08d5.js.map": "/cutting-log-app/static/js/main.5abc08d5.js.map"
+    "main.cc307372.css.map": "/cutting-log-app/static/css/main.cc307372.css.map",
+    "main.9bb14951.js.map": "/cutting-log-app/static/js/main.9bb14951.js.map"
   },
   "entrypoints": [
-    "static/css/main.d2925a14.css",
-    "static/js/main.5abc08d5.js"
+    "static/css/main.cc307372.css",
+    "static/js/main.9bb14951.js"
   ]
 }
