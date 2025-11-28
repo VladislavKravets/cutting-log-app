@@ -5,5 +5,9 @@ const supabaseKey = process.env.REACT_APP_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 // Використовуйте anon key для клієнтського коду
 const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY
 
+// const supabaseServiceKey = process.env.REACT_APP_SUPABASE_SERVICE_ROLE_KEY
+
 // export const supabase = createClient(supabaseUrl, supabaseKey);
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+export const supabaseStorage = createClient(supabaseUrl, supabaseKey)

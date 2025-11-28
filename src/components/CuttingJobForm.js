@@ -1,11 +1,11 @@
-// src/components/CuttingJobForm.js
-
 import React, { useState, useEffect } from 'react';
 import { useNotificationsDB } from '../hooks/useNotificationsDB';
 import { supabase } from '../supabaseClient';
 import './CuttingJobForm.css';
+import { useFileServer } from '../contexts/FileServerContext';
 
 function CuttingJobForm() {
+    const { getHomeUrl, getUploadUrl, getDownloadUrl, config } = useFileServer();
     const { createNotification } = useNotificationsDB();
 
     // Стани компонента
@@ -14,7 +14,7 @@ function CuttingJobForm() {
         notes: '',
     });
     const [jobDetails, setJobDetails] = useState([]);
-    const [newDetail, setNewDetail] = useState({ article_id: '', quantity_planned: 1 });
+    const [newDetail, setNewDetail] = useState({ article_id: '', quantity_planned: '' });
     const [loading, setLoading] = useState(false);
     const [createdJobId, setCreatedJobId] = useState(null);
 
@@ -34,6 +34,20 @@ function CuttingJobForm() {
         file_url: '',
     });
 
+    // Стани для завантаження файлів
+    const [fileUploadData, setFileUploadData] = useState({
+        file: null,
+        uploadProgress: 0,
+        isUploading: false,
+        uploadError: null,
+        uploadSuccess: false
+    });
+
+    // Функція для генерації унікального ID
+    const generateUniqueId = () => {
+        return `ART_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    };
+
     // Утиліта debounce
     const debounce = (func, delay) => {
         let timeoutId;
@@ -41,6 +55,95 @@ function CuttingJobForm() {
             clearTimeout(timeoutId);
             timeoutId = setTimeout(() => func.apply(this, args), delay);
         };
+    };
+
+    const handleFileRemove = () => {
+        setFileUploadData(prev => ({
+            ...prev,
+            file: null,
+            uploadSuccess: false,
+            uploadError: null,
+            uploadProgress: 0
+        }));
+    };
+
+    // Завантаження файлу на сервер
+    const handleFileUpload = async () => {
+        if (!fileUploadData.file) {
+            alert('Будь ласка, виберіть файл для завантаження');
+            return;
+        }
+
+        const allowedExtensions = ['.dxf', '.DXF'];
+        const fileName = fileUploadData.file.name;
+        const fileExtension = fileName.slice(fileName.lastIndexOf('.')).toLowerCase();
+
+        if (!allowedExtensions.includes(fileExtension)) {
+            alert('Дозволені тільки файли з розширенням .dxf');
+            return;
+        }
+
+        setFileUploadData(prev => ({
+            ...prev,
+            isUploading: true,
+            uploadProgress: 0,
+            uploadError: null,
+            uploadSuccess: false
+        }));
+
+        const formData = new FormData();
+        formData.append('file', fileUploadData.file);
+        formData.append('fileName', fileName);
+
+        try {
+            const response = await fetch(getUploadUrl(), {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                const filePath = result.filepath;
+
+                setNewArticleData(prev => ({
+                    ...prev,
+                    file_url: filePath
+                }));
+
+                setFileUploadData(prev => ({
+                    ...prev,
+                    isUploading: false,
+                    uploadSuccess: true
+                }));
+
+                alert(`Файл успішно завантажено!`);
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Помилка завантаження: ${response.status}`);
+            }
+        } catch (error) {
+            console.error('Помилка завантаження файлу:', error);
+            setFileUploadData(prev => ({
+                ...prev,
+                isUploading: false,
+                uploadError: error.message
+            }));
+            alert(`Помилка завантаження файлу: ${error.message}`);
+        }
+    };
+
+    // Обробник вибору файлу
+    const handleFileSelect = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setFileUploadData(prev => ({
+                ...prev,
+                file,
+                uploadProgress: 0,
+                uploadError: null,
+                uploadSuccess: false
+            }));
+        }
     };
 
     // Копіювання посилання в буфер обміну
@@ -70,7 +173,7 @@ function CuttingJobForm() {
 
         let query = supabase
             .from('articles')
-            .select('article_id, name, article_num, thickness, material_type');
+            .select('article_id, name, article_num, thickness, material_type, file_url');
 
         if (searchBy === 'name') {
             query = query.ilike('name', `%${term}%`);
@@ -128,7 +231,7 @@ function CuttingJobForm() {
             }
         ]);
 
-        setNewDetail({ article_id: '', quantity_planned: 1 });
+        setNewDetail({ article_id: '', quantity_planned: '' });
         setSearchTerm('');
         setSelectedArticleObject(null);
         setSearchResults([]);
@@ -151,22 +254,43 @@ function CuttingJobForm() {
         setLoading(true);
 
         try {
-            if (newArticleData.article_num) {
+            let finalArticleNum = newArticleData.article_num;
+
+            // Якщо номер артикула порожній, генеруємо унікальний ID
+            if (!finalArticleNum.trim()) {
+                finalArticleNum = generateUniqueId();
+                console.log(`Згенеровано унікальний номер артикула: ${finalArticleNum}`);
+            } else {
+                // Якщо номер введено, перевіряємо на унікальність
                 const { data: existingArticle } = await supabase
                     .from('articles')
                     .select('article_num')
-                    .eq('article_num', newArticleData.article_num)
+                    .eq('article_num', finalArticleNum)
                     .single();
 
                 if (existingArticle) {
-                    throw new Error(`Артикул з номером ${newArticleData.article_num} вже існує!`);
+                    throw new Error(`Артикул з номером ${finalArticleNum} вже існує!`);
                 }
             }
 
+            // Перевірка, що назва артикула обов'язкова
+            if (!newArticleData.name.trim()) {
+                throw new Error('Назва артикула є обов\'язковою!');
+            }
+
+            // Підготовка даних для вставки
+            const articleDataToInsert = {
+                name: newArticleData.name.trim(),
+                article_num: finalArticleNum,
+                thickness: newArticleData.thickness,
+                material_type: newArticleData.material_type.trim(),
+                file_url: newArticleData.file_url || null
+            };
+
             const { data: articleData, error } = await supabase
                 .from('articles')
-                .insert([newArticleData])
-                .select('article_id, name, article_num, thickness, material_type');
+                .insert([articleDataToInsert])
+                .select('article_id, name, article_num, thickness, material_type, file_url');
 
             if (error) throw error;
 
@@ -179,6 +303,7 @@ function CuttingJobForm() {
 
             setIsModalOpen(false);
             setNewArticleData({ name: '', article_num: '', thickness: 1.0, material_type: '', file_url: '' });
+            setFileUploadData({ file: null, uploadProgress: 0, isUploading: false, uploadError: null, uploadSuccess: false });
 
         } catch (error) {
             console.error('Помилка створення артикула:', error);
@@ -264,82 +389,230 @@ function CuttingJobForm() {
             <div className="cutting-form-modal">
                 <div className="cutting-form-modal__content">
                     <h3 className="cutting-form-modal__title">Створення нового артикула</h3>
+
                     <form onSubmit={handleCreateNewArticle} className="cutting-form-modal__form">
-                        <div className="cutting-form-modal__field">
-                            <label className="cutting-form-modal__label">Номер артикула:</label>
-                            <input
-                                type="text"
-                                name="article_num"
-                                value={newArticleData.article_num}
-                                onChange={handleNewArticleDataChange}
-                                placeholder="3000312.00.001"
-                                required
-                                disabled={loading}
-                                className="cutting-form-modal__input"
-                            />
+                        {/* Основні поля форми */}
+                        <div className="cutting-form-modal__field-group">
+                            <div className="cutting-form-modal__field">
+                                <label htmlFor="article_num" className="cutting-form-modal__label">
+                                    Номер артикула:
+                                </label>
+                                <input
+                                    id="article_num"
+                                    type="text"
+                                    name="article_num"
+                                    value={newArticleData.article_num}
+                                    onChange={handleNewArticleDataChange}
+                                    placeholder="3000312.00.001 (необов'язково)"
+                                    disabled={loading}
+                                    className="cutting-form-modal__input"
+                                />
+                                <small className="cutting-form-modal__hint">
+                                    Якщо залишити порожнім, буде згенеровано унікальний ID
+                                </small>
+                            </div>
+
+                            <div className="cutting-form-modal__field">
+                                <label htmlFor="article_name" className="cutting-form-modal__label">
+                                    Назва артикула: *
+                                </label>
+                                <input
+                                    id="article_name"
+                                    type="text"
+                                    name="name"
+                                    value={newArticleData.name}
+                                    onChange={handleNewArticleDataChange}
+                                    placeholder="Пластина опорна"
+                                    required
+                                    disabled={loading}
+                                    className="cutting-form-modal__input"
+                                />
+                            </div>
+
+                            <div className="cutting-form-modal__field">
+                                <label htmlFor="thickness" className="cutting-form-modal__label">
+                                    Товщина (мм): *
+                                </label>
+                                <input
+                                    id="thickness"
+                                    type="number"
+                                    name="thickness"
+                                    step="0.1"
+                                    min="0.1"
+                                    value={newArticleData.thickness}
+                                    onChange={handleNewArticleDataChange}
+                                    required
+                                    disabled={loading}
+                                    className="cutting-form-modal__input"
+                                />
+                            </div>
+
+                            <div className="cutting-form-modal__field">
+                                <label htmlFor="material_type" className="cutting-form-modal__label">
+                                    Тип матеріалу: *
+                                </label>
+                                <input
+                                    id="material_type"
+                                    type="text"
+                                    name="material_type"
+                                    value={newArticleData.material_type}
+                                    onChange={handleNewArticleDataChange}
+                                    placeholder="Сталь 3"
+                                    required
+                                    disabled={loading}
+                                    className="cutting-form-modal__input"
+                                />
+                            </div>
                         </div>
 
+                        {/* Блок завантаження файлу */}
                         <div className="cutting-form-modal__field">
-                            <label className="cutting-form-modal__label">Назва артикула:</label>
-                            <input
-                                type="text"
-                                name="name"
-                                value={newArticleData.name}
-                                onChange={handleNewArticleDataChange}
-                                placeholder="Пластина опорна"
-                                required
-                                disabled={loading}
-                                className="cutting-form-modal__input"
-                            />
+                            <label className="cutting-form-modal__label">
+                                Завантаження DXF файлу (необов'язково):
+                            </label>
+
+                            <div className="cutting-form-upload" id="file-upload-area">
+                                {/* Область перетягування */}
+                                <div
+                                    className="cutting-form-upload__drop-area"
+                                    onDragOver={(e) => {
+                                        e.preventDefault();
+                                        e.currentTarget.closest('.cutting-form-upload').classList.add('cutting-form-upload--dragover');
+                                    }}
+                                    onDragLeave={(e) => {
+                                        e.preventDefault();
+                                        if (!e.currentTarget.contains(e.relatedTarget)) {
+                                            e.currentTarget.closest('.cutting-form-upload').classList.remove('cutting-form-upload--dragover');
+                                        }
+                                    }}
+                                    onDrop={(e) => {
+                                        e.preventDefault();
+                                        e.currentTarget.closest('.cutting-form-upload').classList.remove('cutting-form-upload--dragover');
+                                        const files = e.dataTransfer.files;
+                                        if (files.length > 0) {
+                                            handleFileSelect({ target: { files } });
+                                        }
+                                    }}
+                                    onClick={() => document.querySelector('.cutting-form-upload__input').click()}
+                                >
+                                    <div className="cutting-form-upload__drop-icon">📁</div>
+                                    <div className="cutting-form-upload__drop-text">
+                                        Перетягніть DXF файл сюди
+                                    </div>
+                                    <div className="cutting-form-upload__drop-hint">
+                                        або натисніть для вибору файлу
+                                    </div>
+                                    <button type="button" className="cutting-form-upload__browse-btn">
+                                        Обрати файл
+                                    </button>
+                                </div>
+
+                                {/* Вибраний файл */}
+                                {fileUploadData.file && (
+                                    <div className="cutting-form-upload__file-info">
+                                        <div className="cutting-form-upload__file-icon">📎</div>
+                                        <div className="cutting-form-upload__file-details">
+                                            <div className="cutting-form-upload__file-name">
+                                                {fileUploadData.file.name}
+                                            </div>
+                                            <div className="cutting-form-upload__file-size">
+                                                Розмір: {(fileUploadData.file.size / 1024 / 1024).toFixed(2)} MB
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            className="cutting-form-upload__remove-btn"
+                                            onClick={handleFileRemove}
+                                            title="Видалити файл"
+                                            disabled={fileUploadData.isUploading}
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* Прогрес завантаження */}
+                                {fileUploadData.isUploading && (
+                                    <div className="cutting-form-upload__progress">
+                                        <div className="cutting-form-upload__progress-bar">
+                                            <div
+                                                className="cutting-form-upload__progress-fill"
+                                                style={{ width: `${fileUploadData.uploadProgress}%` }}
+                                            ></div>
+                                        </div>
+                                        <span className="cutting-form-upload__progress-text">
+                  {fileUploadData.uploadProgress}%
+                </span>
+                                    </div>
+                                )}
+
+                                {/* Повідомлення про статус */}
+                                {fileUploadData.uploadSuccess && (
+                                    <div className="cutting-form-upload__success">
+                                        ✅ Файл успішно завантажено!
+                                    </div>
+                                )}
+
+                                {fileUploadData.uploadError && (
+                                    <div className="cutting-form-upload__error">
+                                        ❌ {fileUploadData.uploadError}
+                                    </div>
+                                )}
+
+                                {/* Прихований input та кнопки */}
+                                <div className="cutting-form-upload__controls">
+                                    <input
+                                        type="file"
+                                        accept=".dxf,.DXF"
+                                        onChange={handleFileSelect}
+                                        disabled={fileUploadData.isUploading}
+                                        className="cutting-form-upload__input"
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={handleFileUpload}
+                                    disabled={!fileUploadData.file || fileUploadData.isUploading}
+                                    className="cutting-form-btn cutting-form-btn--upload"
+                                >
+                                    {fileUploadData.isUploading ? 'Завантаження...' : 'Завантажити файл'}
+                                </button>
+                            </div>
+
+                            {/* Поле для URL файлу */}
+                            <div className="cutting-form-modal__field" style={{ marginTop: '16px' }}>
+                                <label htmlFor="file_url" className="cutting-form-modal__label">
+                                    URL файлу (заповниться автоматично):
+                                </label>
+                                <input
+                                    id="file_url"
+                                    type="text"
+                                    name="file_url"
+                                    value={getHomeUrl() + newArticleData.file_url}
+                                    onChange={handleNewArticleDataChange}
+                                    placeholder="URL файлу буде заповнено автоматично після завантаження"
+                                    className="cutting-form-modal__input"
+                                />
+                                <small className="cutting-form-modal__hint">
+                                    Можна ввести URL вручну або завантажити файл вище
+                                </small>
+                            </div>
                         </div>
 
-                        <div className="cutting-form-modal__field">
-                            <label className="cutting-form-modal__label">Товщина (мм):</label>
-                            <input
-                                type="number"
-                                name="thickness"
-                                step="0.1"
-                                min="0.1"
-                                value={newArticleData.thickness}
-                                onChange={handleNewArticleDataChange}
-                                required
-                                disabled={loading}
-                                className="cutting-form-modal__input"
-                            />
-                        </div>
-
-                        <div className="cutting-form-modal__field">
-                            <label className="cutting-form-modal__label">Тип матеріалу:</label>
-                            <input
-                                type="text"
-                                name="material_type"
-                                value={newArticleData.material_type}
-                                onChange={handleNewArticleDataChange}
-                                placeholder="Сталь 3"
-                                required
-                                disabled={loading}
-                                className="cutting-form-modal__input"
-                            />
-                        </div>
-
-                        <div className="cutting-form-modal__field">
-                            <label className="cutting-form-modal__label">URL файлу (необов'язково):</label>
-                            <input
-                                type="text"
-                                name="file_url"
-                                value={newArticleData.file_url}
-                                onChange={handleNewArticleDataChange}
-                                placeholder="design/file_name.dxf"
-                                disabled={loading}
-                                className="cutting-form-modal__input"
-                            />
-                        </div>
-
+                        {/* Кнопки дій */}
                         <div className="cutting-form-modal__actions">
-                            <button type="submit" disabled={loading} className="cutting-form-btn cutting-form-btn--primary">
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="cutting-form-btn cutting-form-btn--primary"
+                            >
                                 {loading ? 'Збереження...' : 'Зберегти та вибрати'}
                             </button>
-                            <button type="button" onClick={() => setIsModalOpen(false)} className="cutting-form-btn cutting-form-btn--secondary">
+                            <button
+                                type="button"
+                                onClick={() => setIsModalOpen(false)}
+                                className="cutting-form-btn cutting-form-btn--secondary"
+                            >
                                 Скасувати
                             </button>
                         </div>
@@ -422,6 +695,23 @@ function CuttingJobForm() {
                         <h2 className="cutting-form-section__title">
                             Додати Артикул до Специфікації
                         </h2>
+                        <button
+                            type="button"
+                            className="cutting-form-btn cutting-form-btn--create"
+                            onClick={() => {
+                                const initialData = {
+                                    name: searchBy === 'name' ? searchTerm : '',
+                                    article_num: searchBy === 'article_num' ? searchTerm : '',
+                                    thickness: 1.0,
+                                    material_type: '',
+                                    file_url: '',
+                                };
+                                setNewArticleData(initialData);
+                                setIsModalOpen(true);
+                            }}
+                        >
+                            + Створити новий артикул
+                        </button>
                     </div>
 
                     <div className="cutting-form-section__content">
@@ -466,7 +756,7 @@ function CuttingJobForm() {
                                         onClick={() => {
                                             setSelectedArticleObject(null);
                                             setSearchTerm('');
-                                            setNewDetail({ article_id: '', quantity_planned: 1 });
+                                            setNewDetail({ article_id: '', quantity_planned: '' });
                                             setSearchResults([]);
                                         }}
                                         className="cutting-form-btn cutting-form-btn--danger cutting-form-btn--small"
@@ -482,6 +772,14 @@ function CuttingJobForm() {
                                         name="quantity_planned"
                                         value={newDetail.quantity_planned}
                                         onChange={handleNewDetailChange}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault(); // Запобігти відправці форми
+                                                if (selectedArticleObject && newDetail.quantity_planned >= 1) {
+                                                    handleAddDetail();
+                                                }
+                                            }
+                                        }}
                                         min="1"
                                         required
                                         disabled={!selectedArticleObject}
@@ -490,7 +788,6 @@ function CuttingJobForm() {
                                 </div>
 
                                 <div className="cutting-form-add">
-
                                     <button
                                         type="button"
                                         onClick={handleAddDetail}
@@ -520,6 +817,7 @@ function CuttingJobForm() {
                                             <div className="cutting-form-search__item-name">{art.name}</div>
                                             <div className="cutting-form-search__item-details">
                                                 {art.thickness}мм, {art.material_type}
+                                                {art.file_url && <span className="cutting-form-search__file-indicator"> 📎</span>}
                                             </div>
                                         </div>
                                     ))}
@@ -559,6 +857,7 @@ function CuttingJobForm() {
                                     <strong>{selectedArticleObject.article_num}</strong> - {selectedArticleObject.name}
                                     <span className="cutting-form-selected__details">
                                         Товщина: {selectedArticleObject.thickness}мм | Матеріал: {selectedArticleObject.material_type}
+                                        {selectedArticleObject.file_url && <span> | Файл: ✅</span>}
                                     </span>
                                 </div>
                             </div>
@@ -590,6 +889,7 @@ function CuttingJobForm() {
                                         <th className="cutting-form-table__header">Артикул</th>
                                         <th className="cutting-form-table__header">Товщина, Матеріал</th>
                                         <th className="cutting-form-table__header">Кількість</th>
+                                        <th className="cutting-form-table__header">Файл</th>
                                         <th className="cutting-form-table__header">Дія</th>
                                     </tr>
                                     </thead>
@@ -605,6 +905,20 @@ function CuttingJobForm() {
                                             </td>
                                             <td className="cutting-form-table__cell cutting-form-table__cell--quantity">
                                                 {detail.quantity_planned}
+                                            </td>
+                                            <td className="cutting-form-table__cell cutting-form-table__cell--file">
+                                                {detail.article_info.file_url ? (
+                                                    <a
+                                                        href={detail.article_info.file_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="cutting-form-file-link"
+                                                    >
+                                                        📎
+                                                    </a>
+                                                ) : (
+                                                    <span className="cutting-form-no-file">—</span>
+                                                )}
                                             </td>
                                             <td className="cutting-form-table__cell cutting-form-table__cell--actions">
                                                 <button

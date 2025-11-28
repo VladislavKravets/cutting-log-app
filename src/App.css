@@ -54,8 +54,25 @@ header {
     display: flex;
 }
 
-.logo-container{
+.logo-container {
     margin-right: 2%;
+}
+
+/* Применяем плавность к изображению в его нормальном состоянии */
+.logo-container img {
+    /* *** ИЗМЕНЕНИЕ: Transition перенесен сюда *** */
+    /* Это обеспечит плавность как при наведении, так и при уводе курсора. */
+    transition: transform 0.3s ease-in-out;
+
+    /* Убедитесь, что изображение имеет блочное отображение, если оно встроено */
+    /*display: block;*/
+}
+
+/* Эффект при наведении */
+.logo-container img:hover {
+    /* Теперь здесь только сами изменения состояния */
+    transform: scale(2);
+    cursor: pointer;
 }
 
 .nav-button {

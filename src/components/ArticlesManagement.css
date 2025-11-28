@@ -755,3 +755,111 @@
 .articles-search {
     animation: searchSlideDown 0.3s ease-out;
 }
+
+/* Стилі для фільтрів видимості */
+.filter-field .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.checkbox-group {
+    margin: 15px 0;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.hidden-count {
+    color: #666;
+    font-size: 0.9em;
+    margin-left: 8px;
+}
+
+/* Стилі для статусу видимості в таблиці */
+.article-visibility {
+    text-align: center;
+}
+
+.visibility-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+.visibility-status.visible {
+    background-color: #e8f5e8;
+    color: #2e7d32;
+}
+
+.visibility-status.hidden {
+    background-color: #fff3e0;
+    color: #ef6c00;
+}
+
+/* Стилі для прихованих рядків */
+.hidden-article {
+    background-color: #fafafa !important;
+    opacity: 0.7;
+}
+
+.hidden-article:hover {
+    background-color: #f0f0f0 !important;
+    opacity: 0.9;
+}
+
+/* Кнопка зміни видимості */
+.visibility-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.visibility-button:hover {
+    background-color: #e0e0e0;
+}
+
+/* Бейдж для прихованих артикулів */
+.hidden-badge {
+    background-color: #ff9800;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    margin-left: 8px;
+}
+
+/* Адаптивність для нових елементів */
+@media (max-width: 768px) {
+    .search-filters {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .filter-field .checkbox-label {
+        font-size: 12px;
+    }
+
+    .visibility-status {
+        font-size: 0.7em;
+        padding: 2px 6px;
+    }
+}

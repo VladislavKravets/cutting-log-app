@@ -1,12 +1,11 @@
 /* Основний контейнер */
 .cutting-tasks-management {
-    max-width: 1400px;
+    max-width: 100%;
     margin: 0 auto;
-    padding: 24px;
+    padding: 12px;
     background: #F0F8FF;
     min-height: 100vh;
     font-family: 'Segoe UI', system-ui, sans-serif;
-    border-radius: 15px;
 }
 
 /* Заголовок */
@@ -14,14 +13,16 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 32px;
-    padding-bottom: 16px;
-    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .tasks-header h1 {
     color: #1e293b;
-    font-size: 28px;
+    font-size: 20px;
     font-weight: 700;
     margin: 0;
 }
@@ -30,82 +31,78 @@
     background: #059669;
     color: white;
     border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    white-space: nowrap;
 }
 
 .task-create-btn:hover {
     background: #047857;
-    transform: translateY(-1px);
 }
 
-/* Фільтри */
+/* Фільтри - НА ВСЮ ШИРИНУ */
 .tasks-filters {
     background: white;
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 24px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     border: 1px solid #e2e8f0;
 }
 
 .filters-row {
-    display: flex;
-    gap: 16px;
-    align-items: flex-end;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap: 12px;
+    align-items: end;
 }
 
 .filter-item {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    flex: 1;
-    min-width: 200px;
+    gap: 6px;
+}
+
+.filter-item:first-child {
+    grid-column: span 1;
 }
 
 .filter-item label {
     color: #475569;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 12px;
+    white-space: nowrap;
 }
 
 .filter-input, .filter-item select {
-    padding: 12px 16px;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 14px;
-    transition: all 0.2s ease;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 12px;
     background: white;
     color: #334155;
-}
-
-.filter-input:focus, .filter-item select:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    /*width: 100%;*/
 }
 
 .filters-clear-btn {
     background: #64748b;
     color: white;
     border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
-    height: 44px;
+    height: 36px;
+    white-space: nowrap;
+    align-self: end;
 }
 
 .filters-clear-btn:hover {
     background: #475569;
-    transform: translateY(-1px);
 }
 
 /* Контроли */
@@ -113,69 +110,78 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding: 16px 0;
+    margin-bottom: 12px;
+    padding: 12px 0;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .tasks-count {
     color: #64748b;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 500;
 }
 
 .url-job-notice {
     color: #3b82f6;
-    margin-left: 12px;
+    margin-left: 8px;
     font-weight: 600;
+    font-size: 11px;
 }
 
 .page-size-selector {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .page-size-selector label {
     color: #475569;
     font-weight: 500;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .page-size-selector select {
-    padding: 8px 12px;
+    padding: 6px 8px;
     border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 14px;
+    border-radius: 4px;
+    font-size: 12px;
 }
 
-/* Таблиця */
+/* Контейнер для таблиці */
 .tasks-table-wrapper {
+    width: 100%;
     background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     border: 1px solid #e2e8f0;
-    margin-bottom: 24px;
+    overflow-x: auto;
 }
 
+/* Базова таблиця для десктопу */
 .tasks-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: 12px;
+    min-width: 800px;
 }
 
 .tasks-table th {
     background: #f8fafc;
-    padding: 16px 12px;
+    padding: 10px 8px;
     text-align: left;
     font-weight: 600;
     color: #475569;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+    font-size: 11px;
+    position: sticky;
+    top: 0;
 }
 
 .sortable-header {
     cursor: pointer;
-    transition: background-color 0.2s;
     user-select: none;
 }
 
@@ -184,9 +190,11 @@
 }
 
 .tasks-table td {
-    padding: 16px 12px;
+    padding: 10px 8px;
     border-bottom: 1px solid #f1f5f9;
     color: #475569;
+    vertical-align: top;
+    font-size: 11px;
 }
 
 .task-row {
@@ -199,65 +207,199 @@
 }
 
 .task-row-selected {
+    cursor: pointer;
     background: #f0f9ff;
-    border-left: 3px solid #3b82f6;
+    border-left: 2px solid #3b82f6;
 }
 
-/* Статуси */
-.task-status {
-    padding: 5px;
-    border-radius: 20px;
-    font-size: 12px;
+/* Компактні стилі для мобільних */
+.mobile-task-card {
+    display: none;
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.mobile-task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.mobile-task-id {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.mobile-task-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
 }
 
-.task-status-вчерзі {
+.mobile-task-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.mobile-task-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.mobile-detail-label {
+    font-size: 10px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.mobile-detail-value {
+    font-size: 11px;
+    color: #374151;
+}
+
+.mobile-task-notes {
+    margin: 8px 0;
+    padding: 8px;
+    background: #f8fafc;
+    border-radius: 4px;
+    font-size: 11px;
+    color: #475569;
+}
+
+.mobile-task-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.mobile-action-btn {
+    flex: 1;
+    background: none;
+    border: 1px solid #e2e8f0;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    text-align: center;
+    min-width: 60px;
+}
+
+.mobile-action-btn.primary {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+/* Статуси */
+.task-status, .mobile-task-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+    text-align: center;
+}
+
+.task-status-вчерзі, .mobile-task-status-вчерзі {
     background: #fef3c7;
     color: #92400e;
 }
 
-.task-status-вроботі {
+.task-status-вроботі, .mobile-task-status-вроботі {
     background: #dbeafe;
     color: #1e40af;
 }
 
-.task-status-виконано {
+.task-status-виконано, .mobile-task-status-виконано {
     background: #d1fae5;
     color: #065f46;
 }
 
-.task-status-скасовано {
+.task-status-скасовано, .mobile-task-status-скасовано {
     background: #fecaca;
     color: #991b1b;
 }
 
-/* Дії */
+/* Дії для десктопу */
 .task-actions {
     display: flex;
     gap: 4px;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 .action-btn {
     background: none;
     border: none;
-    padding: 8px;
-    border-radius: 6px;
+    padding: 4px 6px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 12px;
     transition: all 0.2s;
 }
 
 .action-btn:hover {
-    transform: scale(1.1);
+    background: #f1f5f9;
 }
 
-.action-edit:hover { background: #dbeafe; }
-.action-delete:hover { background: #fecaca; }
-.action-details:hover { background: #f1f5f9; }
-.action-link:hover { background: #f0f9ff; }
-.action-log:hover { background: #f0fdf4; }
+/* Стилі для статусу металу */
+.task-metal {
+    text-align: center;
+}
+
+.metal-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 11px;
+}
+
+.metal-status:hover {
+    transform: scale(1.05);
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.metal-available {
+    color: #16a34a;
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+}
+
+.metal-not-available {
+    color: #dc2626;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+}
+
+.metal-status-text {
+    font-size: 10px;
+    font-weight: 500;
+}
+
+.metal-status-completed {
+    color: #6b7280;
+    font-style: italic;
+    user-select: none;
+    font-size: 11px;
+}
 
 /* Деталі завдання */
 .task-details-row {
@@ -265,52 +407,69 @@
 }
 
 .task-details-panel {
-    padding: 20px;
+    padding: 12px;
 }
 
 .details-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .details-header h4 {
     color: #1e293b;
     margin: 0;
+    font-size: 14px;
 }
 
 .details-search {
-    min-width: 250px;
+    min-width: 200px;
+    flex: 1;
+}
+
+.details-search input {
+    width: 90%;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 12px;
 }
 
 .article-add-form {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     align-items: center;
-    margin-bottom: 20px;
-    padding: 16px;
+    margin-bottom: 12px;
+    padding: 12px;
     background: white;
-    border-radius: 8px;
+    border-radius: 6px;
     border: 1px solid #e2e8f0;
+    font-size: 12px;
+    flex-wrap: wrap;
 }
 
 .article-add-form select,
 .article-add-form input {
-    padding: 8px 12px;
+    padding: 6px 8px;
     border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    flex: 1;
+    min-width: 120px;
 }
 
 .article-add-btn {
     background: #059669;
     color: white;
     border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .article-add-btn:hover {
@@ -321,24 +480,28 @@
 .articles-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
 }
 
 .article-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px;
+    padding: 10px;
     background: white;
-    border-radius: 8px;
+    border-radius: 6px;
     border: 1px solid #e2e8f0;
+    font-size: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .article-info {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
     flex: 1;
+    min-width: 200px;
 }
 
 .article-name {
@@ -349,35 +512,38 @@
 .article-number {
     color: #64748b;
     font-family: 'Courier New', monospace;
+    font-size: 11px;
 }
 
 .article-specs {
     color: #475569;
-    font-size: 13px;
+    font-size: 11px;
 }
 
 .article-quantity {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .quantity-input {
-    width: 80px;
-    padding: 6px 8px;
+    width: 60px;
+    padding: 4px 6px;
     border: 1px solid #cbd5e1;
     border-radius: 4px;
     text-align: center;
+    font-size: 12px;
 }
 
 .article-remove-btn {
     background: #dc2626;
     color: white;
     border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 11px;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .article-remove-btn:hover {
@@ -386,9 +552,10 @@
 
 .no-articles-message {
     text-align: center;
-    padding: 40px;
+    padding: 20px;
     color: #64748b;
     font-style: italic;
+    font-size: 12px;
 }
 
 /* Пагінація */
@@ -396,25 +563,30 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 0;
+    padding: 12px 0;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .pagination-info {
     color: #64748b;
-    font-size: 14px;
+    font-size: 11px;
 }
 
 .pagination-buttons {
     display: flex;
-    gap: 8px;
+    gap: 4px;
+    flex-wrap: wrap;
 }
 
 .pagination-btn {
-    padding: 8px 16px;
+    padding: 6px 10px;
     border: 1px solid #cbd5e1;
     background: white;
-    border-radius: 6px;
+    border-radius: 4px;
     cursor: pointer;
+    font-size: 11px;
+    min-width: 36px;
     transition: all 0.2s;
 }
 
@@ -435,38 +607,58 @@
 }
 
 /* Модальні вікна */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
 .modal-form {
     background: white;
-    padding: 32px;
-    border-radius: 12px;
-    width: 100%;
+    padding: 20px;
+    border-radius: 8px;
+    width: 95%;
     max-width: 500px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.modal-form h2 {
+    color: #1e293b;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    text-align: center;
 }
 
 .form-field {
-    margin-bottom: 20px;
+    margin-bottom: 12px;
 }
 
 .form-field label {
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     color: #475569;
     font-weight: 500;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .form-field input,
 .form-field select,
 .form-field textarea {
     width: 100%;
-    padding: 10px 12px;
+    padding: 8px 12px;
     border: 1px solid #cbd5e1;
-    border-radius: 6px;
+    border-radius: 4px;
     font-size: 14px;
-    transition: all 0.2s;
 }
 
 .form-field input:focus,
@@ -478,29 +670,102 @@
 }
 
 .readonly-date {
-    padding: 10px 12px;
+    padding: 8px 12px;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 6px;
+    border-radius: 4px;
     color: #64748b;
+    font-size: 12px;
+}
+
+/* Стилі для чекбокса в формі */
+.checkbox-field {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.checkbox-label input[type="checkbox"] {
+    /*display: none;*/
+}
+
+.checkbox-custom {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #d1d5db;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkbox-custom {
+    background-color: #2563eb;
+    border-color: #2563eb;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkbox-custom::after {
+    content: '✓';
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.checkbox-label input[type="checkbox"]:disabled + .checkbox-custom {
+    background-color: #f3f4f6;
+    border-color: #d1d5db;
+    cursor: not-allowed;
+}
+
+.checkbox-label input[type="checkbox"]:disabled:checked + .checkbox-custom {
+    background-color: #9ca3af;
+    border-color: #9ca3af;
+}
+
+.disabled-hint {
+    font-size: 10px;
+    color: #6b7280;
+    font-style: italic;
+    margin-left: 6px;
+}
+
+.filter-hint {
+    font-size: 10px;
+    color: #6b7280;
+    margin-top: 2px;
 }
 
 .form-buttons {
     display: flex;
-    gap: 12px;
-    margin-top: 24px;
+    gap: 8px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.form-save-btn, .form-cancel-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    min-width: 120px;
+    transition: all 0.2s;
 }
 
 .form-save-btn {
     background: #3b82f6;
     color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    flex: 1;
 }
 
 .form-save-btn:hover {
@@ -510,237 +775,307 @@
 .form-cancel-btn {
     background: #64748b;
     color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    flex: 1;
 }
 
 .form-cancel-btn:hover {
     background: #475569;
 }
 
-/* Адаптивність */
+/* АДАПТИВНІСТЬ */
+
+/* Планшети та маленькі десктопи */
+@media (max-width: 1024px) {
+    .cutting-tasks-management {
+        padding: 8px;
+    }
+
+    .tasks-table {
+        min-width: 800px;
+    }
+
+    .filters-row {
+        grid-template-columns: 1.5fr 1fr 1fr 1fr auto;
+        gap: 10px;
+    }
+}
+
+/* Мобільні пристрої - ПОКАЗУЄМО КАРТОЧКИ */
 @media (max-width: 768px) {
     .cutting-tasks-management {
-        padding: 12px;
+        padding: 8px;
     }
 
     .tasks-header {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-    }
-
-    .tasks-header h1 {
-        font-size: 24px;
-    }
-
-    .filters-row {
-        flex-direction: column;
+        align-items: stretch;
         gap: 12px;
     }
 
-    .filter-item {
-        min-width: auto;
+    .tasks-header h1 {
+        font-size: 18px;
+        text-align: center;
+    }
+
+    .task-create-btn {
         width: 100%;
+    }
+
+    .filters-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .filter-item:first-child {
+        grid-column: 1 / -1; /* Пошук на всю ширину */
+    }
+
+    .filters-clear-btn {
+        grid-column: 1 / -1; /* Кнопка на всю ширину */
+        justify-self: start;
+        width: auto;
     }
 
     .tasks-controls {
         flex-direction: column;
-        gap: 16px;
-        align-items: flex-start;
+        align-items: stretch;
+        gap: 12px;
     }
 
     .page-size-selector {
-        align-self: flex-end;
+        justify-content: space-between;
+        width: 100%;
     }
 
-    /* Таблиця для мобільних */
-    .tasks-table-wrapper {
-        overflow-x: auto;
-        border-radius: 8px;
-    }
-
+    /* Перемикаємо на карточки на мобільних */
     .tasks-table {
-        min-width: 800px; /* Мінімальна ширина для горизонтального скролу */
+        display: none; /* Ховаємо таблицю */
     }
 
-    .tasks-table th,
-    .tasks-table td {
-        padding: 12px 8px;
-        font-size: 13px;
+    .mobile-task-card {
+        display: block; /* Показуємо карточки */
     }
 
-    .task-actions {
-        flex-wrap: wrap;
-        gap: 2px;
-    }
-
-    .action-btn {
-        padding: 6px;
-        font-size: 14px;
-    }
-
-    /* Деталі завдання */
     .task-details-panel {
-        padding: 16px;
+        padding: 8px;
     }
 
     .details-header {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
+        align-items: stretch;
+        gap: 8px;
     }
 
     .details-search {
-        width: 100%;
         min-width: auto;
+        width: 100%;
     }
 
     .article-add-form {
         flex-direction: column;
         align-items: stretch;
-        gap: 12px;
-        padding: 12px;
+        gap: 8px;
+    }
+
+    .article-add-form select,
+    .article-add-form input {
+        min-width: auto;
+        width: 100%;
     }
 
     .article-item {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 12px;
+        align-items: stretch;
+        gap: 8px;
     }
 
     .article-quantity {
-        width: 100%;
         justify-content: space-between;
+        width: 100%;
     }
 
-    .quantity-input {
-        width: 60px;
-    }
-
-    /* Пагінація */
     .tasks-pagination {
         flex-direction: column;
-        gap: 16px;
-        align-items: center;
+        gap: 12px;
+        text-align: center;
     }
 
     .pagination-buttons {
-        flex-wrap: wrap;
         justify-content: center;
     }
 
-    .pagination-btn {
-        padding: 6px 12px;
-        font-size: 13px;
-    }
-
-    /* Модальні вікна */
     .modal-form {
-        padding: 20px;
         margin: 10px;
-        max-height: 95vh;
+        width: calc(100% - 20px);
+        padding: 16px;
     }
 
     .form-buttons {
         flex-direction: column;
     }
+
+    .form-save-btn, .form-cancel-btn {
+        min-width: auto;
+        width: 100%;
+    }
+
+    .metal-status-text {
+        display: none;
+    }
 }
 
-/* Додаткові стилі для дуже малих екранів */
+/* Дуже малі екрани */
 @media (max-width: 480px) {
     .cutting-tasks-management {
-        padding: 8px;
-    }
-
-    .tasks-header h1 {
-        font-size: 20px;
-    }
-
-    .task-create-btn {
-        padding: 10px 16px;
-        font-size: 13px;
-        width: 100%;
+        padding: 4px;
     }
 
     .tasks-filters {
-        padding: 16px;
+        padding: 12px;
     }
 
-    .filter-input, .filter-item select {
-        padding: 10px 12px;
-        font-size: 13px;
+    .filters-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .filter-item:first-child {
+        grid-column: 1;
     }
 
     .filters-clear-btn {
-        padding: 10px 16px;
-        font-size: 13px;
+        grid-column: 1;
+        width: 100%;
+        justify-self: stretch;
+    }
+
+    .mobile-task-details {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .mobile-task-actions {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .mobile-action-btn {
+        min-width: auto;
         width: 100%;
     }
 
-    .tasks-table {
-        min-width: 900px; /* Збільшуємо для дуже малих екранів */
+    .articles-list {
+        gap: 6px;
     }
 
-    .tasks-table th,
-    .tasks-table td {
-        padding: 8px 6px;
-        font-size: 12px;
+    .article-item {
+        padding: 8px;
     }
 
-    .task-status {
+    .pagination-btn {
         padding: 4px 8px;
-        font-size: 11px;
-    }
-
-    /* Приховуємо деякі стовпці на дуже малих екранів */
-    .tasks-table th:nth-child(3), /* Дата створення */
-    .tasks-table td:nth-child(3) {
-        display: none;
-    }
-
-    .modal-form {
-        padding: 16px;
-    }
-
-    .form-field input,
-    .form-field select,
-    .form-field textarea {
-        padding: 8px 10px;
-        font-size: 13px;
+        font-size: 10px;
+        min-width: 32px;
     }
 }
 
 /* Горизонтальна орієнтація на телефонах */
 @media (max-width: 768px) and (orientation: landscape) {
-    .cutting-tasks-management {
-        padding: 8px;
+    .mobile-task-details {
+        grid-template-columns: 1fr 1fr;
     }
 
-    .tasks-table {
-        min-width: 700px;
-    }
-
-    .tasks-table th,
-    .tasks-table td {
-        padding: 6px 4px;
-        font-size: 12px;
+    .mobile-task-actions {
+        flex-direction: row;
     }
 }
 
-/* Спеціальні стилі для iOS Safari */
+/* Спеціальні стилі для iOS */
 @supports (-webkit-touch-callout: none) {
-    .cutting-tasks-management {
-        padding-bottom: 80px; /* Додатковий відступ для iOS */
+    .task-create-btn,
+    .action-btn,
+    .mobile-action-btn,
+    .article-add-btn,
+    .article-remove-btn,
+    .pagination-btn,
+    .form-save-btn,
+    .form-cancel-btn {
+        -webkit-tap-highlight-color: transparent;
     }
 
-    .filter-input, .filter-item select {
-        font-size: 16px; /* Фікс zoom в iOS */
+    .filter-input,
+    .filter-item select,
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+        font-size: 16px;
     }
+}
+
+/* Стилі для скроллбару */
+.tasks-table-wrapper::-webkit-scrollbar {
+    height: 4px;
+}
+
+.tasks-table-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.tasks-table-wrapper::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 2px;
+}
+
+.tasks-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Для Firefox */
+.tasks-table-wrapper {
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+/* Loading state */
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+/* Error state */
+.error-box {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 12px;
+}
+
+/* Нотатки в таблиці */
+.task-notes {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: help;
+}
+
+.task-notes:hover {
+    white-space: normal;
+    overflow: visible;
+    background: white;
+    z-index: 5;
+    /*position: absolute;*/
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    max-width: 300px;
+    /*width: 100%;*/
+}
+
+/* Сортування */
+.getSortIcon {
+    margin-left: 4px;
+    font-size: 10px;
 }

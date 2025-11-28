@@ -689,3 +689,153 @@
     .logs-data-table.responsive-table td:nth-child(10)::before { content: "Кінець лічильник:"; }
     .logs-data-table.responsive-table td:nth-child(11)::before { content: "Енергія (кВт):"; }
 }
+
+/* Стилі для панелі файлів звітів */
+.reports-panel {
+    margin: 15px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.reports-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.report-file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    transition: all 0.2s ease;
+}
+
+.report-file-item:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+}
+
+.report-file-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.report-file-name {
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+}
+
+.report-program {
+    font-size: 12px;
+    color: #6c757d;
+    background: #e9ecef;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.report-date {
+    font-size: 12px;
+    color: #6c757d;
+    /*margin-left: auto;*/
+    margin-left: 50px;
+}
+
+.view-report-button {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.view-report-button:hover {
+    background: #2563eb;
+}
+
+/* Індикатор наявності звітів в заголовку */
+.job-reports {
+    background: #17a2b8;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Адаптивність для мобільних пристроїв */
+@media (max-width: 768px) {
+    .report-file-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .report-file-info {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .report-date {
+        margin-left: 0;
+    }
+
+    .view-report-button {
+        align-self: flex-end;
+    }
+}
+
+/* Стилі для кнопок сортування */
+.sort-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.sort-btn {
+    background: #6c757d;
+    color: black;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.sort-btn:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
+.sort-active {
+    background: #007bff;
+    font-weight: bold;
+}
+
+.sort-active:hover {
+    background: #0056b3;
+}
+
+/* Адаптація для мобільних пристроїв */
+@media (max-width: 768px) {
+    .sort-buttons {
+        flex-direction: column;
+    }
+
+    .sort-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+}

@@ -1,0 +1,93 @@
+/* --- Переменные --- */
+//$bg-image: url("https://img5.goodfon.com/wallpaper/nbig/f/1a/osen-listia-fon-derevo-colorful-doska-wood-background-autu-2.jpg");
+$text-color: #252525;
+$animation-duration: 10s; // *** УВЕЛИЧЕНО с 5s до 10s (Медленнее) ***
+$leaf-width: 8%;
+
+/* --- Глобальные стили --- */
+.autumn-background-wrapper {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  background: linear-gradient(
+                  to bottom right,
+                  #1a202c,
+                  #3c1b1b,
+                  #58330c,
+                  #1a202c
+  );
+}
+
+/* --- Анимация Падающих Листьев --- */
+
+@keyframes anim {
+  0% {
+    /* Начинаем далеко сверху и невидимыми */
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 0;
+  }
+
+  /* Лист перемещается к зоне входа, оставаясь невидимым */
+  1% {
+    transform: translateY(-50px) rotate(5deg);
+    opacity: 0;
+  }
+
+  5% {
+    /* Полное появление после того, как лист вошел в область -50px */
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(120vh) rotate(-360deg);
+    opacity: 0;
+  }
+}
+
+.leaf-item {
+  position: absolute;
+  top: 0;
+  width: $leaf-width;
+
+  /* Применяем общую анимацию, используя увеличенную переменную */
+  animation: anim $animation-duration ease-in-out infinite;
+
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+}
+
+/* --- Декоративный Центральный Блок --- */
+
+.autumn-label-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%) rotate(45deg);
+  width: 320px;
+  height: 320px;
+  background: transparent;
+  z-index: 2;
+  border: 20px solid $text-color;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: $text-color;
+  text-transform: uppercase;
+
+  h1 {
+    transform: rotate(-45deg);
+    margin: 0;
+    padding: 0;
+    font-size: 2.5rem;
+  }
+}

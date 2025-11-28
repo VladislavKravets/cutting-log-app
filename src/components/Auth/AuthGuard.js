@@ -7,8 +7,10 @@ const AuthGuard = ({ children }) => {
     const [isChecking, setIsChecking] = useState(true);
     const location = useLocation();
 
+    // Сторінки, які доступні без пароля
+    const publicPages = ['/view/information', '/view/reports'];
+
     useEffect(() => {
-        // Перевіряємо чи користувач вже авторизований
         const authStatus = localStorage.getItem('isAuthenticated');
         if (authStatus === 'true') {
             setIsAuthenticated(true);
@@ -17,10 +19,8 @@ const AuthGuard = ({ children }) => {
     }, []);
 
     const handleLogin = (password) => {
-        // const correctUsername = process.env.REACT_APP_AUTH_USERNAME;
         const correctPassword = process.env.REACT_APP_AUTH_PASSWORD;
 
-        // if (username === correctUsername && password === correctPassword) {
         if (password === correctPassword) {
             setIsAuthenticated(true);
             localStorage.setItem('isAuthenticated', 'true');
@@ -38,16 +38,28 @@ const AuthGuard = ({ children }) => {
         return <div>Перевірка авторизації...</div>;
     }
 
+    // Якщо сторінка публічна - пропускаємо без пароля
+    const isPublicPage = publicPages.includes(location.pathname);
+    if (isPublicPage) {
+        return React.cloneElement(children, {
+            onLogout: handleLogout,
+            isAuthenticated: isAuthenticated
+        });
+    }
+
+    // Для захищених сторінок - вимагаємо пароль
     if (!isAuthenticated) {
         return <LoginForm onLogin={handleLogin} />;
     }
 
-    return React.cloneElement(children, { onLogout: handleLogout });
+    return React.cloneElement(children, {
+        onLogout: handleLogout,
+        isAuthenticated: true
+    });
 };
 
-// Компонент форми логіну
+// Компонент форми логіну (залишається без змін)
 const LoginForm = ({ onLogin }) => {
-    // const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
@@ -58,7 +70,7 @@ const LoginForm = ({ onLogin }) => {
         if (onLogin(password)) {
             setError('');
         } else {
-            setError('Невірне ім\'я користувача або пароль');
+            setError('Невірний пароль');
         }
     };
 
@@ -66,17 +78,8 @@ const LoginForm = ({ onLogin }) => {
         <div className="login-container">
             <div className="login-form">
                 <h2>Авторизація</h2>
+                <p className="login-info">Для доступу до цієї сторінки потрібен пароль</p>
                 <form onSubmit={handleSubmit}>
-                    {/*<div className="form-group">*/}
-                    {/*    <label htmlFor="username">Ім'я користувача:</label>*/}
-                    {/*    <input*/}
-                    {/*        type="text"*/}
-                    {/*        id="username"*/}
-                    {/*        value={username}*/}
-                    {/*        onChange={(e) => setUsername(e.target.value)}*/}
-                    {/*        required*/}
-                    {/*    />*/}
-                    {/*</div>*/}
                     <div className="form-group">
                         <label htmlFor="password">Пароль:</label>
                         <input

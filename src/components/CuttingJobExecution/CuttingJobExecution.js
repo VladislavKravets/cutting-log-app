@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../supabaseClient';
 import './CuttingJobExecution.css';
+import FileViewer from "../File/FileViewer";
+import ReportCleanupService from '../../utils/reportCleanup';
+import PDFCompressor from '../../utils/pdfCompressor';
+import {useFileServer} from "../../contexts/FileServerContext";
 
 // Константи для кращої підтримки
 const VALID_STATUSES = ['В черзі', 'В роботі', 'Виконано', 'Призупинено', 'Скасовано'];
@@ -67,8 +71,17 @@ const calculateGasConsumption = (start, end, isOxygenActive, isAirActive) => {
     return consumption;
 };
 
-
 function CuttingJobExecution({ jobId, onBack }) {
+    const { getHomeUrl, getUploadUrl, getDownloadUrl, config, isLoading: isFileServerLoading } = useFileServer();
+
+    const [isDeletingFile, setIsDeletingFile] = useState(false);
+    const [showFileViewer, setShowFileViewer] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [reportFile, setReportFile] = useState(null);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [isUploading, setIsUploading] = useState(false);
+    const [isDragOver, setIsDragOver] = useState(false);
+
     // Основні стани
     const [job, setJob] = useState(null);
     const [programId, setProgramId] = useState(null);
@@ -83,7 +96,7 @@ function CuttingJobExecution({ jobId, onBack }) {
     const [logForm, setLogForm] = useState(INITIAL_LOG_FORM);
     const [jobStatusInput, setJobStatusInput] = useState('');
 
-    // Похідні дані (ПЕРЕМІЩЕНО СЮДИ для коректної області видимості)
+    // Похідні дані
     const detailsToRender = Object.values(detailsMap);
     const isMainFormDisabled = !programId;
     const isButtonDisabled = loading || !programId || isEditingProgramName;
@@ -100,6 +113,116 @@ function CuttingJobExecution({ jobId, onBack }) {
         isOxygenEntered,
         isAirUsed
     );
+
+    // Обробники для drag & drop
+    const handleDragOver = useCallback((e) => {
+        e.preventDefault();
+        setIsDragOver(true);
+    }, []);
+
+    const handleDragLeave = useCallback((e) => {
+        e.preventDefault();
+        if (!e.currentTarget.contains(e.relatedTarget)) {
+            setIsDragOver(false);
+        }
+    }, []);
+
+    const handleDrop = useCallback((e) => {
+        e.preventDefault();
+        setIsDragOver(false);
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileSelect({ target: { files } });
+        }
+    }, []);
+
+    // Допоміжні функції для файлів
+    const getFileType = useCallback((file) => {
+        const extension = file.name.split('.').pop().toLowerCase();
+        const typeMap = {
+            pdf: 'PDF документ',
+            doc: 'Word документ',
+            docx: 'Word документ',
+            xls: 'Excel таблиця',
+            xlsx: 'Excel таблиця',
+            txt: 'Текстовий файл'
+        };
+        return typeMap[extension] || 'Файл';
+    }, []);
+
+    const formatFileSize = useCallback((bytes) => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }, []);
+
+    // Функція видалення файлу
+    const handleDeleteReportFile = async () => {
+        if (!currentLog?.report_url || !currentLog?.log_entry_id) {
+            alert('Файл для видалення не знайдено');
+            return;
+        }
+
+        // Додаткова перевірка існування файлу
+        const fileExists = await ReportCleanupService.checkFileExists(currentLog.report_url);
+        if (!fileExists) {
+            console.warn('⚠️ Файл не знайдено в Storage, оновлюємо тільки базу даних');
+        }
+
+        if (!window.confirm(
+            `Ви впевнені, що хочете видалити цей файл звіту?${
+                fileExists ? '' : ' (Файл вже відсутній в Storage)'
+            } Цю дію не можна скасувати.`
+        )) {
+            return;
+        }
+
+        setIsDeletingFile(true);
+
+        try {
+            const result = await ReportCleanupService.deleteReportFile(
+                currentLog.report_url,
+                currentLog.log_entry_id
+            );
+
+            if (result.success) {
+                console.log('✅ Файл успішно видалено');
+
+                // Оновлюємо стан компонента
+                setCurrentLog(prev => prev ? { ...prev, report_url: null } : null);
+                setReportFile(null);
+
+                alert('Файл звіту успішно видалено');
+            } else {
+                throw new Error(result.error);
+            }
+
+        } catch (error) {
+            console.error('❌ Помилка видалення файлу:', error);
+            alert(`Помилка видалення файлу: ${error.message}`);
+        } finally {
+            setIsDeletingFile(false);
+        }
+    };
+
+    // Функція для відкриття файлу
+    const openFileViewer = () => {
+        if (currentLog?.report_url) {
+            setSelectedFile({
+                url: currentLog.report_url,
+                name: reportFile?.name || `Звіт_${jobId}.pdf`
+            });
+            setShowFileViewer(true);
+        }
+    };
+
+    // Функція для закриття файлу
+    const closeFileViewer = () => {
+        setShowFileViewer(false);
+        setSelectedFile(null);
+    };
 
     // Функція для створення сповіщення
     const createNotification = async (title, message, type = 'system') => {
@@ -134,6 +257,131 @@ function CuttingJobExecution({ jobId, onBack }) {
         window.location.hash = `/view/information?expanded=${jobId}&job_id=${jobId}`;
     };
 
+    // Оновлена функція завантаження файлу - тепер окрема
+    const uploadReportFile = async () => {
+        if (!reportFile || !programId) {
+            alert('Виберіть файл для завантаження');
+            return null;
+        }
+
+        setIsUploading(true);
+        setUploadProgress(0);
+
+        try {
+            // Запускаємо очищення старих файлів
+            ReportCleanupService.safeCleanup(3).catch(err =>
+                console.warn('⚠️ Помилка очищення:', err)
+            );
+
+            let fileToUpload = reportFile;
+            let isCompressed = false;
+
+            // Стискаємо PDF якщо потрібно
+            if (PDFCompressor.needsCompression(reportFile)) {
+                console.log('🎯 Стиснення PDF файлу...');
+                setUploadProgress(10);
+                fileToUpload = await PDFCompressor.compressPDF(reportFile, {
+                    quality: 'medium',
+                    maxSizeMB: 2
+                });
+                isCompressed = true;
+                setUploadProgress(30);
+            }
+
+            // Генеруємо коректне ім'я файлу
+            const fileExtension = fileToUpload.name.split('.').pop();
+            const fileName = `job_${jobId}_report_${Date.now()}.${fileExtension}`;
+            const filePath = `cutting-reports/${fileName}`;
+
+            setUploadProgress(50);
+
+            const { data, error } = await supabase.storage
+                .from('reports')
+                .upload(filePath, fileToUpload, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+
+            if (error) throw error;
+
+            setUploadProgress(80);
+
+            const { data: urlData } = supabase.storage
+                .from('reports')
+                .getPublicUrl(filePath);
+
+            console.log('✅ Файл звіту завантажено:', urlData.publicUrl);
+
+            // Оновлюємо лог з новим URL файлу
+            await updateCuttingLog(urlData.publicUrl);
+
+            setUploadProgress(100);
+
+            // Повертаємо коректні дані
+            return {
+                url: urlData.publicUrl,
+                originalName: reportFile.name,
+                storageName: fileName,
+                isCompressed: isCompressed
+            };
+
+        } catch (error) {
+            console.error('❌ Помилка завантаження файлу:', error);
+            throw new Error(`Помилка завантаження файлу: ${error.message}`);
+        } finally {
+            setIsUploading(false);
+            setTimeout(() => setUploadProgress(0), 2000);
+        }
+    };
+
+    // Окрема функція для завантаження файлу
+    const handleUploadFile = async () => {
+        try {
+            const result = await uploadReportFile();
+            if (result) {
+                alert('✅ Файл успішно завантажено!');
+                // Оновлюємо дані, щоб побачити завантажений файл
+                await fetchJobData();
+            }
+        } catch (error) {
+            alert(`❌ Помилка: ${error.message}`);
+        }
+    };
+
+    const handleFileSelect = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Перевірка типу файлу
+        const allowedTypes = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt'];
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+
+        if (!allowedTypes.includes(fileExtension)) {
+            alert('❌ Недопустимий тип файлу. Дозволені формати: PDF, DOC, DOCX, XLS, XLSX, TXT');
+            return;
+        }
+
+        // Перевірка розміру файлу (макс. 10MB)
+        const maxSize = 10 * 1024 * 1024; // 10MB в байтах
+        if (file.size > maxSize) {
+            alert(`❌ Файл занадто великий. Максимальний розмір: 10MB. Ваш файл: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+            return;
+        }
+
+        // Додаткова перевірка для PDF стиснення
+        if (file.type === 'application/pdf' && file.size > 2 * 1024 * 1024) {
+            if (window.confirm('📄 Цей PDF файл досить великий. Рекомендуємо стиснення. Продовжити?')) {
+                setReportFile(file);
+            }
+            return;
+        }
+
+        setReportFile(file);
+        setUploadProgress(0);
+
+        console.log('✅ Файл вибрано:', file.name, `(${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+    };
+
     // Обробка завершення завдання
     const handleJobCompletion = async () => {
         try {
@@ -142,7 +390,7 @@ function CuttingJobExecution({ jobId, onBack }) {
             const notificationMessage = `
             Різку завдання №${jobId} завершено 
             оператором ${logForm.operator_name || 'невідомо'}. 
-            Загальний час: ${totalTime} хв`; // totalTime тепер визначений
+            Загальний час: ${totalTime} хв`;
 
             await createNotification(notificationTitle, notificationMessage, 'job_completed');
 
@@ -159,7 +407,7 @@ function CuttingJobExecution({ jobId, onBack }) {
             // Перенаправляємо на сторінку інформації
             setTimeout(() => {
                 redirectToInformationPage();
-            }, 1500); // Невелика затримка для показу сповіщення
+            }, 1500);
 
         } catch (error) {
             console.error('❌ Помилка при обробці завершення завдання:', error);
@@ -201,8 +449,6 @@ function CuttingJobExecution({ jobId, onBack }) {
         } catch (err) {
             console.error('Помилка завантаження:', err.message);
             alert(`Помилка: ${err.message}`);
-
-            // setError(err.message);
         } finally {
             setLoading(false);
         }
@@ -233,25 +479,42 @@ function CuttingJobExecution({ jobId, onBack }) {
                 preparation_time: latestLog.preparation_time_minutes || '',
                 cutting_time: latestLog.cutting_time_minutes || '',
             });
+
+            // Якщо є файл звіту, встановлюємо коректний об'єкт File
+            if (latestLog.report_url) {
+                try {
+                    const fileName = extractFileNameFromUrl(latestLog.report_url) || `Звіт_${jobId}.pdf`;
+                    const fileObj = new File([], fileName, {
+                        type: 'application/pdf',
+                        name: fileName
+                    });
+                    setReportFile(fileObj);
+                } catch (error) {
+                    console.warn('Помилка створення об\'єкту файлу:', error);
+                    setReportFile(new File([], `Звіт_${jobId}.pdf`, { type: 'application/pdf' }));
+                }
+            }
         }
     };
 
-    const renderBackButton = () => (
-        <button
-            onClick={onBack}
-            className="back-button secondary-button"
-            disabled={loading}
-        >
-            ← Назад до списку
-        </button>
-    );
+    // функція для отримання назви файлу з URL
+    const extractFileNameFromUrl = (url) => {
+        try {
+            const urlObj = new URL(url);
+            const pathSegments = urlObj.pathname.split('/');
+            return pathSegments[pathSegments.length - 1];
+        } catch (error) {
+            console.error('Помилка отримання назви файлу з URL:', error);
+            return null;
+        }
+    };
 
     const fetchJobDetails = async () => {
         const { data: detailsArray, error: detailsError } = await supabase
             .from('job_details')
             .select(`
                 job_detail_id, quantity_planned, quantity_actual, rejection_count, program_id, job_id, article_id,
-                articles (name, thickness, material_type, article_num)
+                articles (name, thickness, material_type, article_num, file_url)
             `)
             .eq('job_id', jobId);
 
@@ -276,7 +539,7 @@ function CuttingJobExecution({ jobId, onBack }) {
         if (jobId) fetchJobData();
     }, [fetchJobData, jobId]);
 
-    // Обробники подій
+    // Обробники подій (залишаються незмінними)
     const handleProgramNameChange = (e) => setFileNameInput(e.target.value);
 
     const handleCreateProgram = async () => {
@@ -298,13 +561,11 @@ function CuttingJobExecution({ jobId, onBack }) {
             setProgramId(newProgram.program_id);
             setIsEditingProgramName(false);
 
-            // Оновлення статусу при створенні програми
             if (job.status === 'Створено') {
                 await updateJobStatus('В роботі');
             }
 
         } catch (err) {
-            // setError(`Помилка створення програми: ${err.message}`);
             alert(`Помилка: ${err.message}`);
         } finally {
             setLoading(false);
@@ -324,7 +585,6 @@ function CuttingJobExecution({ jobId, onBack }) {
             setIsEditingProgramName(false);
         } catch (err) {
             alert(`Помилка: ${err.message}`);
-            // setError(`Помилка оновлення назви: ${err.message}`);
         } finally {
             setLoading(false);
         }
@@ -338,31 +598,24 @@ function CuttingJobExecution({ jobId, onBack }) {
 
         if (name === 'air_pressure' && type === 'checkbox') {
             newValue = checked ? '1' : '0';
-
-            // ЛОГІКА XOR: Якщо повітря ввімкнено ('1'), скидаємо тиск кисню
             if (newValue === '1') {
                 updates.oxygen_pressure = '';
             }
-
             updates.air_pressure = newValue;
         } else {
-            // Обробка інших полів
             updates[name] = newValue;
         }
 
-        // ЛОГІКА XOR: Якщо вводиться тиск кисню і він не порожній, скидаємо повітря
         if (name === 'oxygen_pressure' && newValue !== '') {
             updates.air_pressure = '0';
         }
 
-        // Якщо зміна стосується кисню або повітря, застосовуємо логіку XOR
         if (name === 'oxygen_pressure' || name === 'air_pressure') {
             setLogForm(prev => ({
                 ...prev,
                 ...updates
             }));
         } else {
-            // Для всіх інших полів
             setLogForm(prev => ({ ...prev, [name]: newValue }));
         }
     };
@@ -385,37 +638,29 @@ function CuttingJobExecution({ jobId, onBack }) {
 
             console.log('🔄 Оновлення деталей завдання:', updates);
 
-            // Оновлюємо кожну деталь окремо
             for (const detail of updates) {
                 const updateData = {
                     quantity_actual: detail.quantity_actual_input === '' ? null : parseInt(detail.quantity_actual_input) || 0,
                     rejection_count: detail.rejection_count_input === '' ? null : parseInt(detail.rejection_count_input) || 0
                 };
 
-                console.log(`📝 Оновлення деталі ${detail.job_detail_id}:`, updateData);
-
                 const { error } = await supabase
                     .from('job_details')
                     .update(updateData)
                     .eq('job_detail_id', detail.job_detail_id);
 
-                if (error) {
-                    console.error(`❌ Помилка оновлення деталі ${detail.job_detail_id}:`, error);
-                    throw new Error(`Помилка оновлення деталі: ${error.message}`);
-                }
+                if (error) throw error;
             }
 
             console.log('✅ Всі деталі успішно оновлені');
 
         } catch (err) {
             alert(`Помилка: ${err.message}`);
-            console.error('❌ Помилка оновлення деталей:', err);
             throw new Error(`Помилка оновлення деталей: ${err.message}`);
         }
     };
 
     const updateJobStatus = async (status) => {
-        console.log(jobId)
         const { error } = await supabase
             .from('cutting_jobs')
             .update({ status })
@@ -428,23 +673,22 @@ function CuttingJobExecution({ jobId, onBack }) {
 
     const handleSaveData = async () => {
         if (!programId) {
-            alert('Спочатку створіть програму різання'); // Використовуємо alert для початкової перевірки
+            alert('Спочатку створіть програму різання');
             return;
         }
 
         setLoading(true);
-        // setError(null); // Цей рядок можна закоментувати/видалити, якщо ви більше не використовуєте setError для виводу на екран
 
         try {
             console.log('🚀 Початок збереження даних...');
 
             // Валідація
-            validateForm(); // Якщо тут буде помилка, вона одразу перейде в блок catch
+            validateForm();
             console.log('✅ Валідація пройдена');
 
-            // 1. Оновлення логу різання
+            // 1. Оновлення логу різання (без файлу - файл завантажується окремо)
             console.log('📝 Оновлення логу різання...');
-            await updateCuttingLog();
+            await updateCuttingLog(currentLog?.report_url || null);
             console.log('✅ Лог різання оновлено');
 
             // 2. Оновлення деталей завдання
@@ -458,25 +702,19 @@ function CuttingJobExecution({ jobId, onBack }) {
                 await updateJobStatus(jobStatusInput);
                 console.log('✅ Статус завдання оновлено');
 
-                // Якщо статус змінено на "Виконано" - обробляємо завершення
                 if (jobStatusInput === 'Виконано') {
                     console.log('🎯 Завдання завершено, обробляємо...');
                     await handleJobCompletion();
-                    return; // Не продовжуємо, бо відбудеться перенаправлення
+                    return;
                 }
             }
 
             console.log('🎉 Всі дані успішно збережено');
-            alert('Дані успішно збережено'); // Сповіщення про успіх
+            alert('Дані успішно збережено');
 
         } catch (err) {
             console.error('💥 Повна помилка збереження:', err);
-            // 📌 КЛЮЧОВА ЗМІНА: Вивід помилки в alert()
             alert(`Помилка: ${err.message}`);
-            // setError(null); // Якщо помилка відображалася, скидаємо її, щоб не заважала
-
-            // ❌ ВАЖЛИВО: Ми НЕ скидаємо logForm чи detailsMap, тому інпути зберігаються.
-
         } finally {
             setLoading(false);
         }
@@ -494,7 +732,32 @@ function CuttingJobExecution({ jobId, onBack }) {
         }
     };
 
-    const updateCuttingLog = async () => {
+    const downloadFile = async (fileUrl, fileName) => {
+        try {
+            const response = await fetch(fileUrl);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName || 'file.dxf';
+            document.body.appendChild(link);
+            link.click();
+
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('Помилка при завантаженні файлу:', error);
+            alert('Помилка завантаження файлу: ' + error.message);
+            window.open(fileUrl, '_blank');
+        }
+    };
+
+    const updateCuttingLog = async (reportUrl = null) => {
         try {
             const logUpdates = {
                 operator_name: logForm.operator_name,
@@ -505,7 +768,8 @@ function CuttingJobExecution({ jobId, onBack }) {
                 cut_date: logForm.cut_date || null,
                 preparation_time_minutes: parseInt(logForm.preparation_time) || null,
                 cutting_time_minutes: parseInt(logForm.cutting_time) || null,
-                end_time: formatToCustomString(new Date())
+                end_time: formatToCustomString(new Date()),
+                report_url: reportUrl
             };
 
             console.log('📝 Оновлення логу різання:', logUpdates);
@@ -513,7 +777,6 @@ function CuttingJobExecution({ jobId, onBack }) {
             let updatedLogData;
 
             if (currentLog?.log_entry_id) {
-                // Оновлення існуючого логу
                 const { data, error } = await supabase
                     .from('cutting_log')
                     .update(logUpdates)
@@ -525,7 +788,6 @@ function CuttingJobExecution({ jobId, onBack }) {
                 updatedLogData = data;
                 console.log('✅ Існуючий лог оновлено');
             } else {
-                // Створення нового логу
                 const { data, error } = await supabase
                     .from('cutting_log')
                     .insert([{
@@ -552,7 +814,156 @@ function CuttingJobExecution({ jobId, onBack }) {
         }
     };
 
-    // Рендер функції (залишаються незмінними)
+    // Оновлена функція рендеру завантаження файлів з окремою кнопкою
+    const renderFileUpload = () => (
+        <div className="file-upload-section">
+            <label className="file-upload-label">
+                📎 Додати файл звіту (необов'язково):
+            </label>
+
+            <div
+                className={`file-drop-area ${isDragOver ? 'file-drop-area--dragover' : ''}`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => document.querySelector('.file-upload-input').click()}
+            >
+                <div className="file-drop-icon">📁</div>
+                <div className="file-drop-text">
+                    Перетягніть файл сюди
+                </div>
+                <div className="file-drop-hint">
+                    або натисніть для вибору файлу
+                </div>
+                <button type="button" className="file-browse-btn">
+                    Обрати файл
+                </button>
+            </div>
+
+            {/* Інформація про вибраний файл */}
+            {reportFile && (
+                <div className="file-info-card">
+                    <div className="file-info-icon">📄</div>
+                    <div className="file-info-details">
+                        <div className="file-info-name">{reportFile.name}</div>
+                        <div className="file-info-meta">
+                            <span className="file-info-type">{getFileType(reportFile)}</span>
+                            <span className="file-info-size">{formatFileSize(reportFile.size)}</span>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        className="file-remove-btn"
+                        onClick={() => setReportFile(null)}
+                        disabled={isUploading}
+                        title="Видалити файл"
+                    >
+                        ✕
+                    </button>
+                </div>
+            )}
+
+            {/* Кнопка завантаження файлу */}
+            {reportFile && !currentLog?.report_url && (
+                <div className="upload-actions">
+                    <button
+                        type="button"
+                        onClick={handleUploadFile}
+                        disabled={isUploading || isMainFormDisabled}
+                        className="upload-file-button"
+                    >
+                        {isUploading ? '📤 Завантаження...' : '📤 Завантажити файл'}
+                    </button>
+                </div>
+            )}
+
+            {/* Прогрес завантаження */}
+            {isUploading && (
+                <div className="upload-progress">
+                    <div className="progress-bar">
+                        <div
+                            className="progress-fill"
+                            style={{ width: `${uploadProgress}%` }}
+                        ></div>
+                    </div>
+                    <div className="progress-text">
+                        <span>Завантаження...</span>
+                        <span className="progress-percentage">{uploadProgress}%</span>
+                    </div>
+                </div>
+            )}
+
+            {/* Статусні повідомлення */}
+            {uploadProgress === 100 && (
+                <div className="upload-status upload-status--success">
+                    ✅ Файл успішно завантажено!
+                </div>
+            )}
+
+            {/* Інформація про підтримувані формати */}
+            <div className="upload-status upload-status--info">
+                ℹ️ Підтримувані формати: PDF, DOC, DOCX, XLS, XLSX, TXT (макс. 10MB)
+            </div>
+
+            {/* Прихований input */}
+            <input
+                type="file"
+                className="file-upload-input"
+                onChange={handleFileSelect}
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
+                disabled={isMainFormDisabled || isUploading}
+                style={{ display: 'none' }}
+            />
+        </div>
+    );
+
+    // Решта функцій рендеру залишаються незмінними
+    const renderUploadedFile = () => {
+        if (!currentLog?.report_url) return null;
+
+        const fileNameFromUrl = extractFileNameFromUrl(currentLog.report_url);
+        const displayName = reportFile?.name || fileNameFromUrl || `Звіт_${jobId}.pdf`;
+
+        return (
+            <div className="uploaded-file-section">
+                <h4>Завантажений файл звіту:</h4>
+                <div className="file-display">
+                    <div className="file-info-group">
+                    <span className="file-name">
+                        📎 {displayName}
+                    </span>
+                        {reportFile?.name && reportFile.name.includes('_compressed') && (
+                            <span className="compressed-badge">стиснутий</span>
+                        )}
+                    </div>
+                    <div className="file-actions">
+                        <button
+                            onClick={openFileViewer}
+                            className="view-file-button"
+                            disabled={isMainFormDisabled || isDeletingFile}
+                        >
+                            Переглянути
+                        </button>
+                        <button
+                            onClick={handleDeleteReportFile}
+                            className="delete-file-button"
+                            disabled={isDeletingFile || isMainFormDisabled}
+                            title="Видалити файл"
+                        >
+                            {isDeletingFile ? '🗑️ Видалення...' : '×'}
+                        </button>
+                    </div>
+                </div>
+                {isDeletingFile && (
+                    <div className="deleting-progress">
+                        <span>Видалення файлу...</span>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    // Решта компонентів залишаються незмінними
     const renderProgramBlock = () => (
         <div className="program-control-block">
             {programId ? (
@@ -654,8 +1065,23 @@ function CuttingJobExecution({ jobId, onBack }) {
             <tbody>
             {detailsToRender.map((detail) => (
                 <tr key={detail.job_detail_id}>
-
-                    <td><>{detail.articles?.name}</> <br/> <h5>{detail.articles?.article_num}</h5></td>
+                    <td>
+                        {detail.articles?.name}
+                        <br/>
+                        <h5>{detail.articles?.article_num}</h5>
+                        {
+                            detail.articles?.file_url ? (
+                                <button
+                                    onClick={() => downloadFile(getHomeUrl() + detail.articles?.file_url, detail.articles?.article_num + '.dxf')}
+                                    className="file-link"
+                                    style={{ border: 'none', color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+                                >
+                                    📎 Файл
+                                </button>
+                            ) : (
+                                <span className="no-file">—</span>
+                            )}
+                    </td>
                     <td>{detail.quantity_planned}</td>
                     <td>
                         <input
@@ -684,8 +1110,6 @@ function CuttingJobExecution({ jobId, onBack }) {
     );
 
     const renderAdditionalParams = () => {
-        // Визначення умов відключення на основі поточних станів
-        // Використовуємо змінні isAirUsed та isOxygenEntered, визначені на рівні компонента
         return (
             <div className="additional-log-params">
                 <div className="time-inputs">
@@ -752,7 +1176,7 @@ function CuttingJobExecution({ jobId, onBack }) {
                             name="oxygen_pressure"
                             value={logForm.oxygen_pressure}
                             onChange={handleLogFormChange}
-                            disabled={isMainFormDisabled || isAirUsed} /* ВИКЛЮЧЕННЯ 1: Вимкнути, якщо Повітря ввімкнено */
+                            disabled={isMainFormDisabled || isAirUsed}
                             step="0.1"
                         />
                     </label>
@@ -764,7 +1188,7 @@ function CuttingJobExecution({ jobId, onBack }) {
                             name="air_pressure"
                             checked={isAirUsed}
                             onChange={handleLogFormChange}
-                            disabled={isMainFormDisabled || isOxygenEntered} /* ВИКЛЮЧЕННЯ 2: Вимкнути, якщо Кисень введено */
+                            disabled={isMainFormDisabled || isOxygenEntered}
                         />
                     </label>
                 </div>
@@ -797,14 +1221,12 @@ function CuttingJobExecution({ jobId, onBack }) {
 
     // Стани завантаження
     if (loading && !job) return <div className="loading">Завантаження завдання №{jobId}...</div>;
-    // if (error) return <div className="error">Помилка: {error}</div>;
     if (!job) return <div className="error">Завдання №{jobId} не знайдено.</div>;
 
     return (
         <div className="execution-container">
             <div className="execution-header">
                 <h1>Виконання Завдання №{jobId}</h1>
-                {/*{renderBackButton()}*/}
             </div>
 
             <div className="job-info">
@@ -833,8 +1255,19 @@ function CuttingJobExecution({ jobId, onBack }) {
             <section className="job-results-section">
                 {renderDetailsTable()}
                 {renderAdditionalParams()}
+                {renderFileUpload()}
+                {renderUploadedFile()}
                 {renderActionButtons()}
             </section>
+
+            {/* Модальне вікно для перегляду файлу */}
+            {showFileViewer && selectedFile && (
+                <FileViewer
+                    fileUrl={selectedFile.url}
+                    fileName={selectedFile.name}
+                    onClose={closeFileViewer}
+                />
+            )}
         </div>
     );
 }

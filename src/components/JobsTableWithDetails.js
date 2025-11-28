@@ -2,9 +2,15 @@
 import React, {useState, useEffect} from 'react';
 import {useSearchParams, useNavigate} from 'react-router-dom';
 import {supabase} from '../supabaseClient';
+import FileViewer from './File/FileViewer';
 import './JobsTableWithDetails.css';
+import {useFileServer} from "../contexts/FileServerContext";
 
 const JobsTableWithDetails = () => {
+    const { getHomeUrl, getUploadUrl, getDownloadUrl, config, isLoading: isFileServerLoading } = useFileServer();
+
+    const [sortByCutDate, setSortByCutDate] = useState('');
+
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
 
@@ -16,6 +22,10 @@ const JobsTableWithDetails = () => {
     const [loading, setLoading] = useState(false);
     const [initialLoad, setInitialLoad] = useState(true);
 
+    // Додаємо стани для перегляду файлів
+    const [showFileViewer, setShowFileViewer] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+
     // Додаємо стани для пагінації
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -25,7 +35,7 @@ const JobsTableWithDetails = () => {
         job_id: searchParams.get('job_id') || '',
         status: searchParams.get('status') || '',
         article_name: searchParams.get('article_name') || '',
-        article_num: searchParams.get('article_num') || '', // ДОДАНО
+        article_num: searchParams.get('article_num') || '',
         material_type: searchParams.get('material_type') || '',
         thickness: searchParams.get('thickness') || '',
         file_name: searchParams.get('file_name') || '',
@@ -35,7 +45,116 @@ const JobsTableWithDetails = () => {
         expanded: searchParams.get('expanded') || ''
     });
 
-    // Оновлення displayFilters при зміні URL параметрів
+    // Додаємо стан для відстеження застосування фільтрів
+    const [filtersApplied, setFiltersApplied] = useState(false);
+
+    // НОВА: Функція для отримання найпізнішої дати різки для завдання
+    const getLatestCutDate = (jobId) => {
+        const logs = cuttingLogs[jobId] || [];
+        if (logs.length === 0) return null;
+
+        let latestDate = null;
+
+        logs.forEach(log => {
+            if (log.cut_date) {
+                try {
+                    const logDate = new Date(log.cut_date);
+                    if (!isNaN(logDate.getTime())) {
+                        if (!latestDate || logDate > latestDate) {
+                            latestDate = logDate;
+                        }
+                    }
+                } catch (error) {
+                    console.warn(`Помилка парсингу дати для логу ${log.log_entry_id}:`, log.cut_date);
+                }
+            }
+        });
+
+        return latestDate;
+    };
+
+    // НОВА: Функція для отримання timestamp для сортування
+    const getCutDateTimestamp = (jobId) => {
+        const date = getLatestCutDate(jobId);
+        return date ? date.getTime() : 0;
+    };
+
+    // НОВА: Покращена функція сортування
+    const sortJobsByCutDate = (jobsList, order) => {
+        const jobsWithDates = jobsList.map(job => ({
+            ...job,
+            cutDateTimestamp: getCutDateTimestamp(job.job_id)
+        }));
+
+        const sortedJobs = [...jobsWithDates].sort((a, b) => {
+            // Завдання з датами йдуть першими, без дат - в кінець
+            if (a.cutDateTimestamp === 0 && b.cutDateTimestamp === 0) return 0;
+            if (a.cutDateTimestamp === 0) return 1;
+            if (b.cutDateTimestamp === 0) return -1;
+
+            if (order === 'desc') {
+                // Від нових до старих
+                return b.cutDateTimestamp - a.cutDateTimestamp;
+            } else {
+                // Від старих до нових
+                return a.cutDateTimestamp - b.cutDateTimestamp;
+            }
+        });
+
+        // Видаляємо тимчасове поле
+        return sortedJobs.map(({ cutDateTimestamp, ...job }) => job);
+    };
+
+    // НОВА: Функція для відформатованої дати різки
+    const getFormattedCutDate = (jobId) => {
+        const date = getLatestCutDate(jobId);
+        return date ? date.toLocaleDateString('uk-UA') : 'Не різали';
+    };
+
+    // Обчислюємо завдання для поточної сторінки - з урахуванням сортування
+    const getSortedAndPaginatedJobs = () => {
+        let sortedJobs = [...jobs];
+
+        // Застосовуємо сортування, якщо воно активне
+        if (sortByCutDate) {
+            sortedJobs = sortJobsByCutDate(sortedJobs, sortByCutDate);
+        }
+
+        return sortedJobs.slice(
+            (currentPage - 1) * itemsPerPage,
+            currentPage * itemsPerPage
+        );
+    };
+
+    const currentJobs = getSortedAndPaginatedJobs();
+
+    // Функції для роботи з файлами
+    const openFileViewer = (fileUrl, fileName) => {
+        setSelectedFile({
+            url: fileUrl,
+            name: fileName || `Звіт.pdf`
+        });
+        setShowFileViewer(true);
+    };
+
+    const closeFileViewer = () => {
+        setShowFileViewer(false);
+        setSelectedFile(null);
+    };
+
+    // Отримання назви файлу з URL
+    const extractFileNameFromUrl = (url) => {
+        try {
+            const urlObj = new URL(url);
+            const pathSegments = urlObj.pathname.split('/');
+            return pathSegments[pathSegments.length - 1];
+        } catch (error) {
+            console.error('Помилка отримання назви файлу з URL:', error);
+            return null;
+        }
+    };
+
+    // ВИПРАВЛЕНА: Оновлення displayFilters при зміні URL параметрів
     useEffect(() => {
         const newFilters = {
             job_id: searchParams.get('job_id') || '',
@@ -53,23 +172,25 @@ const JobsTableWithDetails = () => {
 
         setDisplayFilters(newFilters);
 
+        // Відновлюємо сортування з URL
+        const sortFromUrl = searchParams.get('sort_cut_date');
+        if (sortFromUrl) {
+            setSortByCutDate(sortFromUrl);
+        }
+
         // Автоматичне розгортання завдання з URL параметра
         if (newFilters.expanded) {
             const expandedId = parseInt(newFilters.expanded);
             if (!isNaN(expandedId)) {
                 setExpandedJobs(new Set([expandedId]));
-
-                // Знаходимо сторінку, на якій знаходиться завдання
-                const jobIndex = jobs.findIndex(job => job.job_id === expandedId);
-                if (jobIndex !== -1) {
-                    const page = Math.ceil((jobIndex + 1) / itemsPerPage);
-                    setCurrentPage(page);
-                }
             }
+        } else {
+            // Якщо параметр expanded видалений, очищаємо розгорнуті завдання
+            setExpandedJobs(new Set());
         }
-    }, [searchParams, jobs, itemsPerPage]);
+    }, [searchParams]); // Видаляємо залежності jobs та itemsPerPage
 
-    // Завантаження завдань тільки при першому рендері та при явному оновленні
+    // Завантаження завдань при першому рендері та при зміні фільтрів
     useEffect(() => {
         if (initialLoad) {
             fetchJobs();
@@ -77,15 +198,26 @@ const JobsTableWithDetails = () => {
         }
     }, [initialLoad]);
 
+    // Додаємо useEffect для відстеження змін фільтрів
+    useEffect(() => {
+        const hasActiveFilters =
+            searchParams.get('job_id') ||
+            searchParams.get('status') ||
+            searchParams.get('article_name') ||
+            searchParams.get('article_num') ||
+            searchParams.get('material_type') ||
+            searchParams.get('thickness') ||
+            searchParams.get('file_name') ||
+            searchParams.get('operator_name') ||
+            searchParams.get('date_from') ||
+            searchParams.get('date_to');
+
+        setFiltersApplied(!!hasActiveFilters);
+    }, [searchParams]);
+
     // Пагінація
     const totalItems = jobs.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-    // Обчислюємо завдання для поточної сторінки
-    const currentJobs = jobs.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
 
     // Функції для навігації по сторінках
     const goToPage = (page) => {
@@ -128,11 +260,37 @@ const JobsTableWithDetails = () => {
             params.delete(key);
         }
 
+        // Зберігаємо параметр сортування
+        if (sortByCutDate) {
+            params.set('sort_cut_date', sortByCutDate);
+        }
+
         setSearchParams(params);
         setCurrentPage(1);
 
+        // Встановлюємо прапорець що фільтри застосовані
+        setFiltersApplied(true);
+
         // Оновлюємо дані при зміні фільтрів
         fetchJobs();
+    };
+
+    // НОВА: Функція для сортування за датою різки
+    const handleSortByCutDate = (order = 'desc') => {
+        const newSortOrder = sortByCutDate === order ? '' : order;
+        setSortByCutDate(newSortOrder);
+        setCurrentPage(1);
+
+        // Оновлюємо URL параметр
+        const params = new URLSearchParams(searchParams);
+        if (newSortOrder) {
+            params.set('sort_cut_date', newSortOrder);
+        } else {
+            params.delete('sort_cut_date');
+        }
+        setSearchParams(params);
+
+        console.log(`Сортування за датою різки: ${newSortOrder || 'вимкнено'}`);
     };
 
     // Функція для обробки змін в інпутах
@@ -161,6 +319,34 @@ const JobsTableWithDetails = () => {
         return `/cutting-log-app/#/view/jobs?id=${jobId}`;
     };
 
+    // ВИПРАВЛЕНА: Функція для розгортання/згортання завдання
+    const toggleJobExpansion = (jobId) => {
+        const newExpanded = new Set(expandedJobs);
+        if (newExpanded.has(jobId)) {
+            newExpanded.delete(jobId);
+        } else {
+            newExpanded.add(jobId);
+        }
+        setExpandedJobs(newExpanded);
+
+        // Оновлюємо URL при розгортанні/згортанні, але НЕ змінюємо currentPage
+        const params = new URLSearchParams(searchParams);
+        if (newExpanded.has(jobId)) {
+            params.set('expanded', jobId.toString());
+        } else {
+            params.delete('expanded');
+        }
+
+        // Зберігаємо поточну сторінку в URL
+        if (currentPage > 1) {
+            params.set('page', currentPage.toString());
+        } else {
+            params.delete('page');
+        }
+
+        setSearchParams(params);
+    };
+
     const fetchJobs = async () => {
         try {
             setLoading(true);
@@ -170,19 +356,27 @@ const JobsTableWithDetails = () => {
                 job_id: searchParams.get('job_id') || '',
                 status: searchParams.get('status') || '',
                 article_name: searchParams.get('article_name') || '',
-                article_num: searchParams.get('article_num') || '', // ДОДАНО
+                article_num: searchParams.get('article_num') || '',
                 material_type: searchParams.get('material_type') || '',
                 thickness: searchParams.get('thickness') || '',
                 file_name: searchParams.get('file_name') || '',
                 operator_name: searchParams.get('operator_name') || '',
                 date_from: searchParams.get('date_from') || '',
                 date_to: searchParams.get('date_to') || '',
-                expanded: searchParams.get('expanded') || ''
+                expanded: searchParams.get('expanded') || '',
+                sort_cut_date: searchParams.get('sort_cut_date') || '',
+                page: searchParams.get('page') || '1'
             };
 
-            console.log('Поточні фільтри:', currentFilters); // ДЛЯ ДЕБАГУ
+            console.log('Поточні фільтри:', currentFilters);
 
-            // Основний запит для завдань
+            // Відновлюємо сторінку з URL
+            const pageFromUrl = parseInt(currentFilters.page);
+            if (!isNaN(pageFromUrl) && pageFromUrl >= 1) {
+                setCurrentPage(pageFromUrl);
+            }
+
+            // Отримуємо всі завдання без фільтрації по даті створення
             let query = supabase
                 .from('cutting_jobs')
                 .select('*')
@@ -194,12 +388,6 @@ const JobsTableWithDetails = () => {
             }
             if (currentFilters.status) {
                 query = query.eq('status', currentFilters.status);
-            }
-            if (currentFilters.date_from) {
-                query = query.gte('creation_date', currentFilters.date_from);
-            }
-            if (currentFilters.date_to) {
-                query = query.lte('creation_date', currentFilters.date_to);
             }
 
             const { data: jobsData, error } = await query;
@@ -217,24 +405,22 @@ const JobsTableWithDetails = () => {
             const jobIds = jobsData.map(job => job.job_id);
 
             // Паралельні запити для отримання пов'язаних даних
-            const [detailsResult, programsResult] = await Promise.all([
+            const [detailsResult, programsResult, logsResult] = await Promise.all([
                 fetchJobDetails(jobIds),
-                fetchCuttingPrograms(jobIds)
+                fetchCuttingPrograms(jobIds),
+                fetchAllCuttingLogs() // Отримуємо всі логи для фільтрації по даті різки
             ]);
 
-            // Отримуємо логи різання через program_id
-            const programIds = programsResult.map(program => program.program_id);
-            const logsResult = await fetchCuttingLogs(programIds);
+            console.log('Знайдено деталей:', detailsResult.length);
+            console.log('Знайдено логів:', logsResult.length);
 
-            console.log('Знайдено деталей:', detailsResult.length); // ДЛЯ ДЕБАГУ
-
-            // Фільтрація завдань за додатковими фільтрами
+            // Фільтрація завдань за всіма фільтрами включаючи дату різки
             let filteredJobs = jobsData;
-            if (currentFilters.article_name || currentFilters.article_num || currentFilters.material_type || currentFilters.thickness || currentFilters.file_name || currentFilters.operator_name) {
-                console.log('Застосовуємо додаткові фільтри'); // ДЛЯ ДЕБАГУ
-                filteredJobs = await filterJobsByAdditionalCriteria(jobsData, detailsResult, logsResult, programsResult, currentFilters);
-                console.log('Після фільтрації завдань:', filteredJobs.length); // ДЛЯ ДЕБАГУ
-            }
+
+            // Завжди застосовуємо фільтрацію, навіть якщо фільтри порожні
+            console.log('Застосовуємо фільтрацію завдань');
+            filteredJobs = await filterJobsByAdditionalCriteria(jobsData, detailsResult, logsResult, programsResult, currentFilters);
+            console.log('Після фільтрації завдань:', filteredJobs.length);
 
             setJobs(filteredJobs);
 
@@ -262,6 +448,21 @@ const JobsTableWithDetails = () => {
             console.error('Деталі помилки:', error.message);
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Отримання всіх логів різання
+    const fetchAllCuttingLogs = async () => {
+        try {
+            const {data, error} = await supabase
+                .from('cutting_log')
+                .select('*');
+
+            if (error) throw error;
+            return data || [];
+        } catch (error) {
+            console.error('Помилка завантаження всіх логів:', error);
+            return [];
         }
     };
 
@@ -331,16 +532,17 @@ const JobsTableWithDetails = () => {
                 matches = jobDetails.some(detail =>
                     detail.articles?.name?.toLowerCase().includes(currentFilters.article_name.toLowerCase())
                 );
+                if (!matches) return false;
             }
 
-            // Фільтр по номеру артикулу - ПЕРЕВІРКА НА NULL/UNDEFINED
+            // Фільтр по номеру артикулу
             if (currentFilters.article_num && matches) {
                 matches = jobDetails.some(detail => {
                     const articleNum = detail.articles?.article_num;
                     if (!articleNum) return false;
                     return articleNum.toLowerCase().includes(currentFilters.article_num.toLowerCase());
                 });
-                console.log(`Фільтр article_num: ${currentFilters.article_num}, результат: ${matches}`); // ДЛЯ ДЕБАГУ
+                if (!matches) return false;
             }
 
             // Фільтр по матеріалу
@@ -348,6 +550,7 @@ const JobsTableWithDetails = () => {
                 matches = jobDetails.some(detail =>
                     detail.articles?.material_type?.toLowerCase().includes(currentFilters.material_type.toLowerCase())
                 );
+                if (!matches) return false;
             }
 
             // Фільтр по товщині
@@ -355,6 +558,7 @@ const JobsTableWithDetails = () => {
                 matches = jobDetails.some(detail =>
                     detail.articles?.thickness?.toString().includes(currentFilters.thickness)
                 );
+                if (!matches) return false;
             }
 
             // Фільтр по назві файлу
@@ -362,6 +566,7 @@ const JobsTableWithDetails = () => {
                 matches = jobPrograms.some(program =>
                     program.file_name?.toLowerCase().includes(currentFilters.file_name.toLowerCase())
                 );
+                if (!matches) return false;
             }
 
             // Фільтр по оператору
@@ -369,35 +574,54 @@ const JobsTableWithDetails = () => {
                 matches = jobLogs.some(log =>
                     log.operator_name?.toLowerCase().includes(currentFilters.operator_name.toLowerCase())
                 );
+                if (!matches) return false;
+            }
+
+            // Фільтр по даті різки (cut_date)
+            if ((currentFilters.date_from || currentFilters.date_to) && matches) {
+                // Шукаємо логи з датою різки для цього завдання
+                const hasMatchingCutDate = jobLogs.some(log => {
+                    const cutDate = log.cut_date;
+                    if (!cutDate) return false;
+
+                    // Конвертуємо дату в формат для порівняння
+                    const logDate = new Date(cutDate);
+                    logDate.setHours(0, 0, 0, 0); // Встановлюємо початок дня
+
+                    let dateMatch = true;
+
+                    if (currentFilters.date_from) {
+                        const fromDate = new Date(currentFilters.date_from);
+                        fromDate.setHours(0, 0, 0, 0);
+                        dateMatch = dateMatch && logDate >= fromDate;
+                    }
+
+                    if (currentFilters.date_to) {
+                        const toDate = new Date(currentFilters.date_to);
+                        toDate.setHours(23, 59, 59, 999); // Встановлюємо кінець дня
+                        dateMatch = dateMatch && logDate <= toDate;
+                    }
+
+                    return dateMatch;
+                });
+
+                // Якщо немає логів з датою різки, а фільтр встановлений - не показуємо завдання
+                if (!hasMatchingCutDate) {
+                    matches = false;
+                }
             }
 
             return matches;
         });
     };
 
-    const toggleJobExpansion = (jobId) => {
-        const newExpanded = new Set(expandedJobs);
-        if (newExpanded.has(jobId)) {
-            newExpanded.delete(jobId);
-        } else {
-            newExpanded.add(jobId);
-        }
-        setExpandedJobs(newExpanded);
-
-        // Оновлюємо URL при розгортанні/згортанні
-        const params = new URLSearchParams(searchParams);
-        if (newExpanded.has(jobId)) {
-            params.set('expanded', jobId.toString());
-        } else {
-            params.delete('expanded');
-        }
-        setSearchParams(params);
-    };
-
     const clearFilters = () => {
         const params = new URLSearchParams();
+        // Очищаємо ВСІ параметри включаючи сортування
         setSearchParams(params);
         setCurrentPage(1);
+        setFiltersApplied(false);
+        setSortByCutDate(''); // Очищаємо сортування
         fetchJobs();
     };
 
@@ -469,6 +693,27 @@ const JobsTableWithDetails = () => {
         const programs = cuttingPrograms[jobId] || [];
         const program = programs.find(p => p.program_id === log.program_id);
         return program?.file_name || 'Н/Д';
+    };
+
+    // Отримання файлів звітів для завдання
+    const getJobReportFiles = (jobId) => {
+        const logs = cuttingLogs[jobId] || [];
+        const reportFiles = [];
+
+        logs.forEach(log => {
+            if (log.report_url) {
+                const fileName = extractFileNameFromUrl(log.report_url) || `Звіт_${jobId}.pdf`;
+                reportFiles.push({
+                    url: log.report_url,
+                    name: fileName,
+                    logEntryId: log.log_entry_id,
+                    programName: getProgramNameForLog(log, jobId),
+                    date: log.end_time || log.start_time
+                });
+            }
+        });
+
+        return reportFiles;
     };
 
     if (loading && initialLoad) return <div className="loading">Завантаження...</div>;
@@ -620,24 +865,26 @@ const JobsTableWithDetails = () => {
                 </div>
 
                 <div className="filter-field">
-                    <label>Дата від:</label>
+                    <label>Дата різки від:</label>
                     <input
                         type="date"
                         value={displayFilters.date_from}
                         onChange={(e) => handleInputChange('date_from', e.target.value)}
                         onBlur={(e) => handleFilterApply('date_from', e.target.value)}
                         className="filter-input"
+                        title="Фільтр за датою різки (cut_date)"
                     />
                 </div>
 
                 <div className="filter-field">
-                    <label>Дата до:</label>
+                    <label>Дата різки до:</label>
                     <input
                         type="date"
                         value={displayFilters.date_to}
                         onChange={(e) => handleInputChange('date_to', e.target.value)}
                         onBlur={(e) => handleFilterApply('date_to', e.target.value)}
                         className="filter-input"
+                        title="Фільтр за датою різки (cut_date)"
                     />
                 </div>
             </div>
@@ -646,33 +893,56 @@ const JobsTableWithDetails = () => {
             <div className="journal-controls">
                 <div className="results-summary">
                     Знайдено: {totalItems} завдань
+                    {filtersApplied && <span className="filters-active"> (фільтри застосовані)</span>}
+                    {/*{sortByCutDate && (*/}
+                    {/*    <span className="sort-active">*/}
+                    {/*        (сортування: {sortByCutDate === 'desc' ? 'новіші різки' : 'старіші різки'})*/}
+                    {/*    </span>*/}
+                    {/*)}*/}
                     {loading && <span className="loading-indicator"> (оновлення...)</span>}
+                </div>
+                <div className="page-size-control">
+                    <label>Показати по:</label>
+                    <select
+                        value={itemsPerPage}
+                        onChange={(e) => {
+                            setItemsPerPage(Number(e.target.value));
+                            setCurrentPage(1);
+                        }}
+                        className="page-size-select"
+                    >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                    </select>
                 </div>
 
                 <div className="controls-group">
-                    <div className="page-size-control">
-                        <label>Показати по:</label>
-                        <select
-                            value={itemsPerPage}
-                            onChange={(e) => {
-                                setItemsPerPage(Number(e.target.value));
-                                setCurrentPage(1);
-                            }}
-                            className="page-size-select"
-                        >
-                            <option value={5}>5</option>
-                            <option value={10}>10</option>
-                            <option value={20}>20</option>
-                            <option value={50}>50</option>
-                        </select>
-                    </div>
-
                     <div className="action-buttons">
+                        {/* Кнопки сортування за датою різки */}
+                        <div className="sort-buttons">
+                            <button
+                                onClick={() => handleSortByCutDate('desc')}
+                                className={`action-btn sort-btn ${sortByCutDate === 'desc' ? 'sort-active' : ''}`}
+                                title="Сортувати від нових до старих за датою різки"
+                            >
+                                {sortByCutDate === 'desc' ? '✅' : '🔬'} Новіші різки
+                            </button>
+                            <button
+                                onClick={() => handleSortByCutDate('asc')}
+                                className={`action-btn sort-btn ${sortByCutDate === 'asc' ? 'sort-active' : ''}`}
+                                title="Сортувати від старих до нових за датою різки"
+                            >
+                                {sortByCutDate === 'asc' ? '✅' : '🔬'} Старіші різки
+                            </button>
+                        </div>
+
                         <button onClick={fetchJobs} className="action-btn refresh-btn">
                             🔄 Оновити дані
                         </button>
                         <button className="action-btn clear-filters-btn" onClick={clearFilters}>
-                            🗑️ Очистити фільтри
+                            🗑️ Очистити всі фільтри
                         </button>
                     </div>
                 </div>
@@ -693,6 +963,8 @@ const JobsTableWithDetails = () => {
                         const metrics = calculateCuttingMetrics(latestLog);
                         const totals = calculateJobTotals(details);
                         const isExpanded = expandedJobs.has(job.job_id);
+                        const reportFiles = getJobReportFiles(job.job_id);
+                        const cutDate = getFormattedCutDate(job.job_id);
 
                         return (
                             <div key={job.job_id} className="journal-job-card">
@@ -728,10 +1000,18 @@ const JobsTableWithDetails = () => {
                                         <span className="date-due">
                                             Термін: {new Date(job.due_date).toLocaleDateString('uk-UA')}
                                         </span>
+                                        {/*<span className="date-cut">*/}
+                                        {/*    Різка: {cutDate}*/}
+                                        {/*</span>*/}
                                     </span>
                                         {programs.length > 0 && (
                                             <span className="job-files">
-                                            Файли: {programs.join(', ')}
+                                                Файл створено ✅
+                                            </span>
+                                        )}
+                                        {reportFiles.length > 0 && (
+                                            <span className="job-reports">
+                                            📎 Звіти: {reportFiles.length}
                                         </span>
                                         )}
                                     </div>
@@ -747,6 +1027,37 @@ const JobsTableWithDetails = () => {
                                 {/* Деталі завдання (при розгортанні) */}
                                 {isExpanded && (
                                     <div className="job-card-details">
+                                        {/* Файли звітів */}
+                                        {reportFiles.length > 0 && (
+                                            <div className="reports-panel">
+                                                <h4 className="panel-title">Файли звітів</h4>
+                                                <div className="reports-list">
+                                                    {reportFiles.map((file, index) => (
+                                                        <div key={file.logEntryId || index} className="report-file-item">
+                                                            <div className="report-file-info">
+                                                                <span className="report-file-name">📎 {file.name}
+                                                                    {file.date && (
+                                                                        <span className="report-date">
+                                                                        {'Дата створенн: ' + new Date(file.date).toLocaleDateString('uk-UA')}
+                                                                    </span>
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    openFileViewer(file.url, file.name);
+                                                                }}
+                                                                className="view-report-button"
+                                                            >
+                                                                Переглянути
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
                                         {/* Деталі артикулів */}
                                         {details.length > 0 && (
                                             <div className="details-panel">
@@ -786,13 +1097,22 @@ const JobsTableWithDetails = () => {
                                                                 </td>
                                                                 <td className="file-cell">
                                                                     {detail.articles?.file_url ? (
+                                                                        // <a
+                                                                        //     href={detail.articles.file_url}
+                                                                        //     target="_blank"
+                                                                        //     rel="noopener noreferrer"
+                                                                        //     className="file-download-link"
+                                                                        // >
+                                                                        //     Файл
+                                                                        // </a>
+
                                                                         <a
-                                                                            href={detail.articles.file_url}
+                                                                            href={getHomeUrl() + detail.articles?.file_url}
                                                                             target="_blank"
                                                                             rel="noopener noreferrer"
-                                                                            className="file-download-link"
+                                                                            className="file-link"
                                                                         >
-                                                                            Файл
+                                                                            📎 Файл
                                                                         </a>
                                                                     ) : (
                                                                         'Н/Д'
@@ -807,9 +1127,9 @@ const JobsTableWithDetails = () => {
                                                             <td className="total-planned">{totals.planned}</td>
                                                             <td className="total-actual">{totals.actual}</td>
                                                             <td className="total-rejection">{totals.rejection}</td>
-                                                            <td className="efficiency-cell">
-                                                                Ефективність: {totals.planned > 0 ? Math.round(((totals.actual + totals.rejection) / totals.planned) * 100) : 0}%
-                                                            </td>
+                                                            {/*<td className="efficiency-cell">*/}
+                                                            {/*    Ефективність: {totals.planned > 0 ? Math.round(((totals.actual + totals.rejection) / totals.planned) * 100) : 0}%*/}
+                                                            {/*</td>*/}
                                                         </tr>
                                                         </tfoot>
                                                     </table>
@@ -826,7 +1146,6 @@ const JobsTableWithDetails = () => {
                                                         <thead>
                                                         <tr>
                                                             <th>Програма</th>
-                                                            {/*<th>Оператор</th>*/}
                                                             <th>Дата різки</th>
                                                             <th>Остання зміна</th>
                                                             <th>Підготовка (хв)</th>
@@ -844,8 +1163,7 @@ const JobsTableWithDetails = () => {
                                                             return (
                                                                 <tr key={log.log_entry_id}>
                                                                     <td className="program-name">{getProgramNameForLog(log, job.job_id)}</td>
-                                                                    {/*<td className="operator-name">{logMetrics?.operator_name || 'Н/Д'}</td>*/}
-                                                                    <td className="cut-date">{log.cut_date?.substring(0, 10) || 'Н/Д'}</td>
+                                                                    <td className="cut-date">{log.cut_date ? new Date(log.cut_date).toLocaleDateString('uk-UA') : 'Н/Д'}</td>
                                                                     <td className="last-update">
                                                                         {logMetrics?.end_time ? new Date(logMetrics.end_time).toLocaleString('uk-UA') : 'Н/Д'}
                                                                     </td>
@@ -939,6 +1257,15 @@ const JobsTableWithDetails = () => {
                 </div>
             )}
         </div>
+
+        {/* Модальне вікно для перегляду файлів */}
+        {showFileViewer && selectedFile && (
+            <FileViewer
+                fileUrl={selectedFile.url}
+                fileName={selectedFile.name}
+                onClose={closeFileViewer}
+            />
+        )}
     </div>);
 };
 
