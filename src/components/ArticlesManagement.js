@@ -15,6 +15,15 @@ const SORT_DIRECTION = {
     DESC: 'desc'
 };
 
+// Константи для валідації
+const VALIDATION = {
+    THICKNESS: {
+        MAX: 999.99,
+        MIN: 0,
+        STEP: 0.01
+    }
+};
+
 // Виносимо SearchComponent окремо з власним станом
 const SearchComponent = React.memo(({
                                         onSearchChange,
@@ -134,7 +143,7 @@ const TableComponent = React.memo(({
                                        onToggleVisibility,
                                        onEdit,
                                        onDelete,
-                                       getHomeUrl,
+                                       getDownloadUrl,
                                        downloadFile,
                                        showHidden
                                    }) => {
@@ -154,7 +163,10 @@ const TableComponent = React.memo(({
                 <td className="article-file">
                     {article.file_url ? (
                         <button
-                            onClick={() => downloadFile(getHomeUrl() + article.file_url, article.article_num + '.dxf')}
+                            onClick={() => {
+                                window.open(getDownloadUrl() + article.file_url, '_blank');
+                            }
+                            }
                             className="file-link"
                             style={{ background: 'none', border: 'none', color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
                         >
@@ -179,14 +191,14 @@ const TableComponent = React.memo(({
                     </button>
                     <button
                         className="edit-button"
-                        onClick={() => onEdit(article)}
+                        onClick={() => onEdit('edit', article)}
                         title="Редагувати"
                     >
                         ✏️
                     </button>
                     <button
                         className="delete-button"
-                        onClick={() => onDelete(article)}
+                        onClick={() => onDelete('delete', article)}
                         title="Видалити"
                     >
                         🗑️
@@ -301,8 +313,267 @@ const Modal = React.memo(function Modal({
     );
 });
 
+// Компонент завантаження файлів
+const FileUploadComponent = React.memo(({
+                                            fileUploadData,
+                                            onFileSelect,
+                                            onFileUpload,
+                                            onFileRemove,
+                                            getDownloadUrl,
+                                            onFileUrlChange
+                                        }) => {
+    const fileInputRef = useRef(null);
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        e.currentTarget.classList.add('dragover');
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        if (!e.currentTarget.contains(e.relatedTarget)) {
+            e.currentTarget.classList.remove('dragover');
+        }
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.currentTarget.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            onFileSelect({ target: { files } });
+        }
+    };
+
+    const handleBrowseClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    return (
+        <div className="file-upload-section">
+            <label className="upload-label">Завантаження DXF файлу (необов'язково):</label>
+
+            <div
+                className="upload-drop-area"
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={handleBrowseClick}
+            >
+                <div className="upload-drop-icon">📁</div>
+                <div className="upload-drop-text">Перетягніть DXF файл сюди</div>
+                <div className="upload-drop-hint">або натисніть для вибору файлу</div>
+                <button type="button" className="browse-btn">
+                    Обрати файл
+                </button>
+            </div>
+
+            {/* Вибраний файл */}
+            {fileUploadData.file && (
+                <div className="file-info">
+                    <div className="file-icon">📎</div>
+                    <div className="file-details">
+                        <div className="file-name">{fileUploadData.file.name}</div>
+                        <div className="file-size">
+                            Розмір: {(fileUploadData.file.size / 1024 / 1024).toFixed(2)} MB
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        className="remove-btn"
+                        onClick={onFileRemove}
+                        title="Видалити файл"
+                        disabled={fileUploadData.isUploading}
+                    >
+                        ✕
+                    </button>
+                </div>
+            )}
+
+            {/* Прогрес завантаження */}
+            {fileUploadData.isUploading && (
+                <div className="upload-progress">
+                    <div className="progress-bar">
+                        <div
+                            className="progress-fill"
+                            style={{ width: `${fileUploadData.uploadProgress}%` }}
+                        ></div>
+                    </div>
+                    <span className="progress-text">
+                        {fileUploadData.uploadProgress}%
+                    </span>
+                </div>
+            )}
+
+            {/* Повідомлення про статус */}
+            {fileUploadData.uploadSuccess && (
+                <div className="upload-success">
+                    ✅ Файл успішно завантажено!
+                </div>
+            )}
+
+            {fileUploadData.uploadError && (
+                <div className="upload-error">
+                    ❌ {fileUploadData.uploadError}
+                </div>
+            )}
+
+            {/* Прихований input та кнопки */}
+            <div className="upload-controls">
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".dxf,.DXF"
+                    onChange={onFileSelect}
+                    disabled={fileUploadData.isUploading}
+                    className="file-input"
+                />
+            </div>
+
+            <button
+                type="button"
+                onClick={onFileUpload}
+                disabled={!fileUploadData.file || fileUploadData.isUploading}
+                className="upload-btn"
+            >
+                {fileUploadData.isUploading ? 'Завантаження...' : 'Завантажити файл'}
+            </button>
+
+            {/* Поле для URL файлу */}
+            <div className="file-url-field">
+                <label htmlFor="file_url" className="url-label">
+                    URL файлу (заповниться автоматично):
+                </label>
+                <input
+                    id="file_url"
+                    type="text"
+                    name="file_url"
+                    value={fileUploadData.uploadSuccess ? getDownloadUrl() + fileUploadData.uploadedFileName : ''}
+                    onChange={onFileUrlChange}
+                    placeholder="URL файлу буде заповнено автоматично після завантаження"
+                    className="url-input"
+                />
+                <small className="url-hint">
+                    Можна ввести URL вручну або завантажити файл вище
+                </small>
+            </div>
+        </div>
+    );
+});
+
+// Компонент форми для створення/редагування
+const ArticleForm = React.memo(({ formData, onChange, loading, errors = {}, fileUploadData, onFileSelect, onFileUpload, onFileRemove, getDownloadUrl, onFileUrlChange }) => {
+    const validateThickness = (value) => {
+        const numValue = parseFloat(value);
+        if (isNaN(numValue)) return 'Товщина повинна бути числом';
+        if (numValue > VALIDATION.THICKNESS.MAX) return `Товщина не може перевищувати ${VALIDATION.THICKNESS.MAX} мм`;
+        if (numValue < VALIDATION.THICKNESS.MIN) return `Товщина не може бути меншою за ${VALIDATION.THICKNESS.MIN} мм`;
+        return null;
+    };
+
+    const thicknessError = validateThickness(formData.thickness);
+
+    return (
+        <div className="article-form">
+            <div className="form-group">
+                <label htmlFor="article_num">Номер артикула *</label>
+                <input
+                    type="text"
+                    id="article_num"
+                    name="article_num"
+                    value={formData.article_num}
+                    onChange={onChange}
+                    required
+                    disabled={loading}
+                    placeholder="Введіть номер артикула"
+                    className={errors.article_num ? 'error' : ''}
+                />
+                {errors.article_num && <span className="field-error">{errors.article_num}</span>}
+            </div>
+
+            <div className="form-group">
+                <label htmlFor="name">Назва артикула *</label>
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={onChange}
+                    required
+                    disabled={loading}
+                    placeholder="Введіть назву артикула"
+                    className={errors.name ? 'error' : ''}
+                />
+                {errors.name && <span className="field-error">{errors.name}</span>}
+            </div>
+
+            <div className="form-group">
+                <label htmlFor="thickness">Товщина (мм) *</label>
+                <input
+                    type="number"
+                    id="thickness"
+                    name="thickness"
+                    value={formData.thickness}
+                    onChange={onChange}
+                    step={VALIDATION.THICKNESS.STEP}
+                    min={VALIDATION.THICKNESS.MIN}
+                    max={VALIDATION.THICKNESS.MAX}
+                    required
+                    disabled={loading}
+                    placeholder={`Введіть товщину (${VALIDATION.THICKNESS.MIN}-${VALIDATION.THICKNESS.MAX} мм)`}
+                    className={thicknessError ? 'error' : ''}
+                />
+                {thicknessError && <span className="field-error">{thicknessError}</span>}
+                <div className="field-hint">
+                    Максимальна товщина: {VALIDATION.THICKNESS.MAX} мм
+                </div>
+            </div>
+
+            <div className="form-group">
+                <label htmlFor="material_type">Тип матеріалу *</label>
+                <input
+                    type="text"
+                    id="material_type"
+                    name="material_type"
+                    value={formData.material_type}
+                    onChange={onChange}
+                    required
+                    disabled={loading}
+                    placeholder="Введіть тип матеріалу"
+                    className={errors.material_type ? 'error' : ''}
+                />
+                {errors.material_type && <span className="field-error">{errors.material_type}</span>}
+            </div>
+
+            {/* Компонент завантаження файлів */}
+            <FileUploadComponent
+                fileUploadData={fileUploadData}
+                onFileSelect={onFileSelect}
+                onFileUpload={onFileUpload}
+                onFileRemove={onFileRemove}
+                getDownloadUrl={getDownloadUrl}
+                onFileUrlChange={onFileUrlChange}
+            />
+
+            <div className="form-group checkbox-group">
+                <label className="checkbox-label">
+                    <input
+                        type="checkbox"
+                        name="is_hidden"
+                        checked={formData.is_hidden}
+                        onChange={onChange}
+                        disabled={loading}
+                    />
+                    <span className="checkmark"></span>
+                    Прихований артикул
+                </label>
+            </div>
+        </div>
+    );
+});
+
 function ArticlesManagement() {
-    const { getHomeUrl } = useFileServer();
+    const { getHomeUrl, getUploadUrl, getDownloadUrl, config, isLoading: isFileServerLoading } = useFileServer();
 
     // Стани для даних
     const [articles, setArticles] = useState([]);
@@ -328,6 +599,17 @@ function ArticlesManagement() {
     // Стани для форми
     const [currentArticle, setCurrentArticle] = useState(null);
     const [formData, setFormData] = useState(getInitialFormData());
+    const [formErrors, setFormErrors] = useState({});
+
+    // Стани для завантаження файлів
+    const [fileUploadData, setFileUploadData] = useState({
+        file: null,
+        uploadProgress: 0,
+        isUploading: false,
+        uploadError: null,
+        uploadSuccess: false,
+        uploadedFileName: ''
+    });
 
     // Ініціалізація форми
     function getInitialFormData() {
@@ -340,6 +622,112 @@ function ArticlesManagement() {
             is_hidden: false
         };
     }
+
+    // Функції для роботи з файлами
+    const handleFileSelect = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const allowedExtensions = ['.dxf', '.DXF'];
+            const fileName = file.name;
+            const fileExtension = fileName.slice(fileName.lastIndexOf('.')).toLowerCase();
+
+            if (!allowedExtensions.includes(fileExtension)) {
+                alert('Дозволені тільки файли з розширенням .dxf');
+                return;
+            }
+
+            setFileUploadData(prev => ({
+                ...prev,
+                file,
+                uploadProgress: 0,
+                uploadError: null,
+                uploadSuccess: false
+            }));
+        }
+    };
+
+    const handleFileUpload = async () => {
+        if (!fileUploadData.file) {
+            alert('Будь ласка, виберіть файл для завантаження');
+            return;
+        }
+
+        setFileUploadData(prev => ({
+            ...prev,
+            isUploading: true,
+            uploadProgress: 0,
+            uploadError: null,
+            uploadSuccess: false
+        }));
+
+        const formData = new FormData();
+        formData.append('file', fileUploadData.file);
+        formData.append('fileName', fileUploadData.file.name);
+
+        console.log(getUploadUrl)
+        try {
+            const response = await fetch(getUploadUrl(), {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                const filePath = result.filename;
+
+                setFileUploadData(prev => ({
+                    ...prev,
+                    isUploading: false,
+                    uploadSuccess: true,
+                    uploadedFileName: filePath
+                }));
+
+                // Оновлюємо поле file_url у формі
+                setFormData(prev => ({
+                    ...prev,
+                    file_url: filePath
+                }));
+
+                alert(`Файл успішно завантажено!`);
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Помилка завантаження: ${response.status}`);
+            }
+        } catch (error) {
+            console.error('Помилка завантаження файлу:', error);
+            setFileUploadData(prev => ({
+                ...prev,
+                isUploading: false,
+                uploadError: error.message
+            }));
+            alert(`Помилка завантаження файлу: ${error.message}`);
+        }
+    };
+
+    const handleFileRemove = () => {
+        setFileUploadData(prev => ({
+            ...prev,
+            file: null,
+            uploadSuccess: false,
+            uploadError: null,
+            uploadProgress: 0,
+            uploadedFileName: ''
+        }));
+
+        // Очищаємо поле file_url у формі
+        setFormData(prev => ({
+            ...prev,
+            file_url: ''
+        }));
+    };
+
+    const handleFileUrlChange = (e) => {
+        const { value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            file_url: value
+        }));
+    };
 
     const downloadFile = useCallback(async (fileUrl, fileName) => {
         try {
@@ -444,6 +832,15 @@ function ArticlesManagement() {
     const openModal = useCallback((type, article = null) => {
         setCurrentArticle(article);
         setModalState(prev => ({ ...prev, [type]: true }));
+        setFormErrors({});
+        setFileUploadData({
+            file: null,
+            uploadProgress: 0,
+            isUploading: false,
+            uploadError: null,
+            uploadSuccess: false,
+            uploadedFileName: ''
+        });
 
         if (type === 'create') {
             setFormData(getInitialFormData());
@@ -462,9 +859,49 @@ function ArticlesManagement() {
     const closeModal = useCallback((type) => {
         setModalState(prev => ({ ...prev, [type]: false }));
         setError(null);
+        setFormErrors({});
+        setFileUploadData({
+            file: null,
+            uploadProgress: 0,
+            isUploading: false,
+            uploadError: null,
+            uploadSuccess: false,
+            uploadedFileName: ''
+        });
     }, []);
 
-    // Інші функції залишаються незмінними
+    // Валідація форми
+    const validateForm = (formData) => {
+        const errors = {};
+
+        if (!formData.article_num.trim()) {
+            errors.article_num = 'Номер артикула обов\'язковий';
+        }
+
+        if (!formData.name.trim()) {
+            errors.name = 'Назва артикула обов\'язкова';
+        }
+
+        if (!formData.material_type.trim()) {
+            errors.material_type = 'Тип матеріалу обов\'язковий';
+        }
+
+        if (!formData.thickness && formData.thickness !== 0) {
+            errors.thickness = 'Товщина обов\'язкова';
+        } else {
+            const thicknessValue = parseFloat(formData.thickness);
+            if (isNaN(thicknessValue)) {
+                errors.thickness = 'Товщина повинна бути числом';
+            } else if (thicknessValue > VALIDATION.THICKNESS.MAX) {
+                errors.thickness = `Товщина не може перевищувати ${VALIDATION.THICKNESS.MAX} мм`;
+            } else if (thicknessValue < VALIDATION.THICKNESS.MIN) {
+                errors.thickness = `Товщина не може бути меншою за ${VALIDATION.THICKNESS.MIN} мм`;
+            }
+        }
+
+        return errors;
+    };
+
     const checkArticleNumberUnique = async (articleNum, excludeId = null) => {
         let query = supabase
             .from('articles')
@@ -483,8 +920,18 @@ function ArticlesManagement() {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        setFormErrors({});
 
         try {
+            // Валідація форми
+            const errors = validateForm(formData);
+            if (Object.keys(errors).length > 0) {
+                setFormErrors(errors);
+                setLoading(false);
+                return;
+            }
+
+            // Перевірка унікальності номера артикула
             if (formData.article_num) {
                 const isUnique = await checkArticleNumberUnique(
                     formData.article_num,
@@ -492,14 +939,22 @@ function ArticlesManagement() {
                 );
 
                 if (!isUnique) {
-                    throw new Error(`Артикул з номером ${formData.article_num} вже існує!`);
+                    setFormErrors({ article_num: `Артикул з номером ${formData.article_num} вже існує!` });
+                    setLoading(false);
+                    return;
                 }
             }
+
+            // Підготовка даних для відправки
+            const submitData = {
+                ...formData,
+                thickness: parseFloat(formData.thickness)
+            };
 
             if (type === 'create') {
                 const { error } = await supabase
                     .from('articles')
-                    .insert([formData])
+                    .insert([submitData])
                     .select();
                 if (error) throw error;
 
@@ -507,7 +962,7 @@ function ArticlesManagement() {
             } else if (type === 'edit') {
                 const { error } = await supabase
                     .from('articles')
-                    .update(formData)
+                    .update(submitData)
                     .eq('article_id', currentArticle.article_id);
                 if (error) throw error;
 
@@ -560,8 +1015,16 @@ function ArticlesManagement() {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : (name === 'thickness' ? parseFloat(value) || '' : value)
+            [name]: type === 'checkbox' ? checked : value
         }));
+
+        // Очистити помилку поля при зміні
+        if (formErrors[name]) {
+            setFormErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
     };
 
     const toggleArticleVisibility = useCallback(async (article) => {
@@ -616,12 +1079,12 @@ function ArticlesManagement() {
                 onToggleVisibility={toggleArticleVisibility}
                 onEdit={openModal}
                 onDelete={openModal}
-                getHomeUrl={getHomeUrl}
+                getDownloadUrl={getDownloadUrl}
                 downloadFile={downloadFile}
                 showHidden={searchParams.showHidden}
             />
 
-            {/* Модальні вікна залишаються незмінними */}
+            {/* Модальні вікна з формами */}
             {modalState.create && (
                 <Modal
                     title="Створення нового артикула"
@@ -630,11 +1093,23 @@ function ArticlesManagement() {
                     loading={loading}
                     submitText={loading ? 'Створення...' : 'Створити'}
                 >
-                    {/* Форма створення */}
+                    {error && <div className="error-message">{error}</div>}
+                    <ArticleForm
+                        formData={formData}
+                        onChange={handleFormChange}
+                        loading={loading}
+                        errors={formErrors}
+                        fileUploadData={fileUploadData}
+                        onFileSelect={handleFileSelect}
+                        onFileUpload={handleFileUpload}
+                        onFileRemove={handleFileRemove}
+                        getDownloadUrl={getDownloadUrl}
+                        onFileUrlChange={handleFileUrlChange}
+                    />
                 </Modal>
             )}
 
-            {modalState.edit && (
+            {modalState.edit && currentArticle && (
                 <Modal
                     title="Редагування артикула"
                     onClose={() => closeModal('edit')}
@@ -642,7 +1117,19 @@ function ArticlesManagement() {
                     loading={loading}
                     submitText={loading ? 'Оновлення...' : 'Оновити'}
                 >
-                    {/* Форма редагування */}
+                    {error && <div className="error-message">{error}</div>}
+                    <ArticleForm
+                        formData={formData}
+                        onChange={handleFormChange}
+                        loading={loading}
+                        errors={formErrors}
+                        fileUploadData={fileUploadData}
+                        onFileSelect={handleFileSelect}
+                        onFileUpload={handleFileUpload}
+                        onFileRemove={handleFileRemove}
+                        getDownloadUrl={getDownloadUrl}
+                        onFileUrlChange={handleFileUrlChange}
+                    />
                 </Modal>
             )}
 
@@ -657,6 +1144,7 @@ function ArticlesManagement() {
                 >
                     <p>Ви впевнені, що хочете видалити артикул "{currentArticle.name}" (№{currentArticle.article_num})?</p>
                     <p className="warning-text">Цю дію неможливо скасувати!</p>
+                    {error && <div className="error-message">{error}</div>}
                 </Modal>
             )}
         </div>

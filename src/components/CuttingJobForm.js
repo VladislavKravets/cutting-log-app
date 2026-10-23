@@ -9,8 +9,9 @@ function CuttingJobForm() {
     const { createNotification } = useNotificationsDB();
 
     // Стани компонента
+    const [isAdditionalDataOpen, setIsAdditionalDataOpen] = useState(false);
     const [jobData, setJobData] = useState({
-        due_date: '',
+        priority: 5, // Додаємо пріоритет за замовчуванням
         notes: '',
     });
     const [jobDetails, setJobDetails] = useState([]);
@@ -42,6 +43,18 @@ function CuttingJobForm() {
         uploadError: null,
         uploadSuccess: false
     });
+
+    // Функція для отримання назви пріоритету
+    const getPriorityName = (priority) => {
+        switch(priority) {
+            case 1: return 'Срочно';
+            case 2: return 'Високий';
+            case 3: return 'Середній';
+            case 4: return 'Низький';
+            case 5: return 'Мінімальний';
+            default: return 'Середній';
+        }
+    };
 
     // Функція для генерації унікального ID
     const generateUniqueId = () => {
@@ -103,7 +116,7 @@ function CuttingJobForm() {
 
             if (response.ok) {
                 const result = await response.json();
-                const filePath = result.filepath;
+                const filePath = result.filename;
 
                 setNewArticleData(prev => ({
                     ...prev,
@@ -200,7 +213,9 @@ function CuttingJobForm() {
 
     // Обробники форми
     const handleJobDataChange = (e) => {
-        setJobData({ ...jobData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        const processedValue = name === 'priority' ? parseInt(value) : value;
+        setJobData({ ...jobData, [name]: processedValue });
     };
 
     const handleNewDetailChange = (e) => {
@@ -328,9 +343,10 @@ function CuttingJobForm() {
             const { data: jobDataResult, error: jobError } = await supabase
                 .from('cutting_jobs')
                 .insert({
-                    due_date: jobData.due_date || null,
+                    priority: jobData.priority || 3,
                     notes: jobData.notes,
-                    status: 'В черзі'
+                    status: 'В черзі',
+                    metal_available: false // Додаємо поле за замовчуванням
                 })
                 .select('job_id');
 
@@ -354,7 +370,7 @@ function CuttingJobForm() {
                 await createNotification({
                     type: 'new_job',
                     title: 'Нове завдання',
-                    message: `Створено нове завдання #${newJobId}`,
+                    message: `Створено нове завдання #${newJobId} (Пріоритет: ${getPriorityName(jobData.priority)})`,
                     job_id: newJobId
                 });
             } catch (notificationError) {
@@ -364,9 +380,10 @@ function CuttingJobForm() {
             setCreatedJobId(newJobId);
 
             const jobLink = `${window.location.origin}${window.location.pathname}#/view/jobs?id=${newJobId}`;
-            alert(`Завдання №${newJobId} успішно створено! 🎉\n\nСповіщення про нове завдання буде показано всім користувачам.`);
+            alert(`Завдання №${newJobId} успішно створено! 🎉\n\nПріоритет: ${getPriorityName(jobData.priority)}\nСповіщення про нове завдання буде показано всім користувачам.`);
 
-            setJobData({ due_date: '', notes: '' });
+            // Скидання форми
+            setJobData({ priority: 3, notes: '' });
             setJobDetails([]);
             setNewDetail({ article_id: '', quantity_planned: 1 });
             setSearchTerm('');
@@ -541,8 +558,8 @@ function CuttingJobForm() {
                                             ></div>
                                         </div>
                                         <span className="cutting-form-upload__progress-text">
-                  {fileUploadData.uploadProgress}%
-                </span>
+                                            {fileUploadData.uploadProgress}%
+                                        </span>
                                     </div>
                                 )}
 
@@ -588,7 +605,7 @@ function CuttingJobForm() {
                                     id="file_url"
                                     type="text"
                                     name="file_url"
-                                    value={getHomeUrl() + newArticleData.file_url}
+                                    value={getDownloadUrl() + newArticleData.file_url}
                                     onChange={handleNewArticleDataChange}
                                     placeholder="URL файлу буде заповнено автоматично після завантаження"
                                     className="cutting-form-modal__input"
@@ -626,7 +643,7 @@ function CuttingJobForm() {
     return (
         <div className="cutting-form">
             <div className="articles-header">
-                <h1>📋 Формування Завдання на Різання</h1>
+                <h1>📋 Формування завдання на різку</h1>
             </div>
 
             {/* Блок створеного завдання */}
@@ -635,7 +652,11 @@ function CuttingJobForm() {
                     <div className="cutting-form-success__icon">✅</div>
                     <div className="cutting-form-success__content">
                         <h3 className="cutting-form-success__title">Завдання успішно створено!</h3>
-                        <p className="cutting-form-success__text">Завдання №{createdJobId} готове до використання.</p>
+                        <p className="cutting-form-success__text">
+                            Завдання №{createdJobId} готове до використання.
+                            <br/>
+                            <strong>Пріоритет: {getPriorityName(jobData.priority)}</strong>
+                        </p>
                         <button
                             onClick={copyJobLinkToClipboard}
                             className="cutting-form-btn cutting-form-btn--success"
@@ -650,50 +671,11 @@ function CuttingJobForm() {
             )}
 
             <form onSubmit={handleSubmit} className="cutting-form__form">
-                {/* Основні дані */}
-                <section className="cutting-form-section">
-                    <div className="cutting-form-section__header">
-                        <h2 className="cutting-form-section__title">Основні дані</h2>
-                    </div>
-
-                    <div className="cutting-form-section__content">
-                        <div className="cutting-form-field">
-                            <label className="cutting-form-field__label">
-                                Дата Завершення (план)
-                            </label>
-                            <input
-                                type="date"
-                                name="due_date"
-                                value={jobData.due_date}
-                                onChange={handleJobDataChange}
-                                required
-                                className="cutting-form-field__input"
-                            />
-                        </div>
-
-                        <div className="cutting-form-field">
-                            <label className="cutting-form-field__label">
-                                Примітки до Завдання
-                            </label>
-                            <textarea
-                                name="notes"
-                                value={jobData.notes}
-                                onChange={handleJobDataChange}
-                                rows="3"
-                                placeholder="Введіть додаткові примітки..."
-                                className="cutting-form-field__textarea"
-                            />
-                        </div>
-                    </div>
-                </section>
-
-                <div className="cutting-form-divider"></div>
-
                 {/* Додавання артикулів */}
                 <section className="cutting-form-section">
                     <div className="cutting-form-section__header">
                         <h2 className="cutting-form-section__title">
-                            Додати Артикул до Специфікації
+                            Додавання артикула/лів до специфікації/Завдання
                         </h2>
                         <button
                             type="button"
@@ -909,7 +891,7 @@ function CuttingJobForm() {
                                             <td className="cutting-form-table__cell cutting-form-table__cell--file">
                                                 {detail.article_info.file_url ? (
                                                     <a
-                                                        href={detail.article_info.file_url}
+                                                        href={getDownloadUrl() + detail.article_info.file_url}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="cutting-form-file-link"
@@ -936,6 +918,66 @@ function CuttingJobForm() {
                             </div>
                         )}
                     </div>
+                </section>
+
+                <div className="cutting-form-divider"></div>
+
+                {/* Додаткові дані */}
+                <section className="cutting-form-section">
+                    <div
+                        className="cutting-form-section__header"
+                        onClick={() => setIsAdditionalDataOpen(!isAdditionalDataOpen)}
+                        style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                    >
+                        <h2 className="cutting-form-section__title" style={{ margin: 0 }}>
+                            Додаткові дані
+                            {/*<h7 style={{fontSize: "9px"}}>* Не обов'язково </h7>*/}
+                        </h2>
+                        <span style={{ transform: isAdditionalDataOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "0.3s" }}>
+                            ▼
+                        </span>
+                    </div>
+
+                    {isAdditionalDataOpen && (
+                        <div className="cutting-form-section__content">
+                            <div className="cutting-form-field">
+                                <label className="cutting-form-field__label">
+                                    Пріоритет завдання
+                                    <br/>
+                                    <small style={{color: '#666', fontSize: '12px'}}>
+                                        1 - Срочно, 2 - Високий, 3 - Середній, 4 - Низький, 5 - Мінімальний
+                                    </small>
+                                </label>
+                                <select
+                                    name="priority"
+                                    value={jobData.priority}
+                                    onChange={handleJobDataChange}
+                                    className="cutting-form-field__select"
+                                    required
+                                >
+                                    <option value="1">1 - Срочно</option>
+                                    <option value="2">2 - Високий</option>
+                                    <option value="3">3 - Середній</option>
+                                    <option value="4">4 - Низький</option>
+                                    <option value="5">5 - Мінімальний</option>
+                                </select>
+                            </div>
+
+                            <div className="cutting-form-field">
+                                <label className="cutting-form-field__label">
+                                    Примітки до Завдання <br/><h7 style={{fontSize: "9px"}}>* Не обов'язково </h7>
+                                </label>
+                                <textarea
+                                    name="notes"
+                                    value={jobData.notes}
+                                    onChange={handleJobDataChange}
+                                    rows="3"
+                                    placeholder="Введіть додаткові примітки..."
+                                    className="cutting-form-field__textarea"
+                                />
+                            </div>
+                        </div>
+                    )}
                 </section>
 
                 {/* Кнопка відправки */}

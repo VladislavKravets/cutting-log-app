@@ -1,0 +1,213 @@
+/* WinterBackground.scss */
+
+/* --- Переменные --- */
+$text-color: #ffffff;
+$animation-duration: 15s;
+$snowflake-color: #ffffff;
+
+/* --- Глобальные стили --- */
+.winter-background-wrapper {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  background: linear-gradient(
+                  to bottom,
+                  #0a1a3a,  // Очень темный синий
+                  #1a2b55,  // Темный синий
+                  #2c3e6d,  // Средний синий
+                  #3a4a7a   // Темный серо-синий
+  );
+}
+
+/* Альтернативный вариант с ночным небом */
+/* .winter-background-wrapper {
+  background: linear-gradient(
+                  to bottom,
+                  #0c0f1c,  // Почти черный
+                  #1c233f,  // Темный фиолетово-синий
+                  #2a3458,  // Темный синий
+                  #3a4565   // Серо-синий
+  );
+} */
+
+/* --- Анимация Падающих Снежинок --- */
+
+@keyframes snowFall {
+  0% {
+    transform: translateY(-100px) rotate(0deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes snowDrift {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(20px);
+  }
+}
+
+.snowflake {
+  position: absolute;
+  top: -50px;
+  color: $snowflake-color;
+  font-weight: bold;
+  user-select: none;
+  pointer-events: none;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+
+  animation: snowFall linear infinite;
+
+  &::before {
+    content: '';
+    animation: snowDrift 3s ease-in-out infinite;
+  }
+}
+
+/* --- Декоративный Центральный Блок --- */
+
+.winter-label-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%) rotate(45deg);
+  width: 320px;
+  height: 320px;
+  background: transparent;
+  z-index: 2;
+  border: 20px solid $text-color;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: $text-color;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+  h1 {
+    transform: rotate(-45deg);
+    margin: 0;
+    padding: 0;
+    font-size: 2.5rem;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+    font-weight: bold;
+  }
+}
+
+/* --- Стили для Ёлки --- */
+.christmas-tree {
+  position: absolute;
+  bottom: 100px;
+  right: 95px;
+  font-size: 150px;
+  z-index: 1;
+  filter: drop-shadow(0 0 10px rgba(0, 255, 0, 0.3));
+  animation: treeGlow 3s ease-in-out infinite alternate;
+  transform-origin: center;
+  will-change: transform;
+}
+
+@keyframes treeGlow {
+  0% {
+    filter: drop-shadow(0 0 5px rgba(0, 255, 0, 0.3));
+    transform: scale(1);
+  }
+  100% {
+    filter: drop-shadow(0 0 20px rgba(0, 255, 0, 0.8));
+    transform: scale(1.15);
+  }
+}
+
+/* --- Стили для лічильника --- */
+.new-year-countdown {
+  position: absolute;
+  bottom: 15px;
+  right: 80px;
+  color: $text-color;
+  text-align: center;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  padding: 12px 15px;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  min-width: 200px;
+}
+
+.countdown-title {
+  font-size: 10px;
+  margin: 0 0 10px 0;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+  font-weight: bold;
+  color: #ffeb3b;
+}
+
+.countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.countdown-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.countdown-number {
+  font-size: 12px;
+  font-weight: bold;
+  color: #ffeb3b;
+  text-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
+  margin-bottom: 2px;
+}
+
+.countdown-label {
+  font-size: 0.7rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  opacity: 0.9;
+}
+
+/* Дополнительные стили для разных типов снежинок */
+.snowflake:nth-child(odd) {
+  animation-timing-function: ease-in-out;
+}
+
+.snowflake:nth-child(even) {
+  animation-timing-function: linear;
+}
+
+/* Эффект мерцания для некоторых снежинок */
+.snowflake:nth-child(3n) {
+  animation: snowFall linear infinite, flicker 2s ease-in-out infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+

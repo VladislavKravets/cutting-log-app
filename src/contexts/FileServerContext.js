@@ -115,7 +115,7 @@ export const FileServerProvider = ({ children }) => {
         updateConfig,
         getHomeUrl: () => `${currentConfig.url}`,
         getUploadUrl: () => `${currentConfig.url}${currentConfig.uploadEndpoint}`,
-        getDownloadUrl: (filename) => `${currentConfig.url}${currentConfig.downloadEndpoint}/${filename}`
+        getDownloadUrl: (filename) => `${currentConfig.url}${currentConfig.downloadEndpoint}/`
     };
 
     return (

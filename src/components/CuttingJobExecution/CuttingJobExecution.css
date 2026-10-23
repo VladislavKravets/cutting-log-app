@@ -1341,3 +1341,800 @@
     font-weight: 600;
     color: #4299e1;
 }
+
+/* Стилі для секції газів */
+.gases-section {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.gases-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ddd;
+}
+
+.gases-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.add-gas-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.add-gas-btn:hover:not(:disabled) {
+    background: #45a049;
+}
+
+.add-gas-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.gases-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Стилі для картки газу */
+.gas-meter-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.gas-meter-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.gas-meter-icon {
+    font-size: 24px;
+}
+
+.gas-meter-title {
+    flex: 1;
+    font-size: 16px;
+}
+
+.gas-meter-unit {
+    font-size: 12px;
+    color: #666;
+    margin-left: 5px;
+}
+
+.gas-meter-remove {
+    background: #ff4444;
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s;
+}
+
+.gas-meter-remove:hover:not(:disabled) {
+    background: #cc0000;
+}
+
+.gas-meter-remove:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.gas-meter-fields {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.gas-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.gas-field label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #555;
+}
+
+.gas-input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.gas-input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.gas-input:disabled {
+    background-color: #f5f5f5;
+    color: #999;
+}
+
+.gas-consumption {
+    margin-top: 10px;
+    padding: 8px;
+    background: #e8f5e9;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.gas-consumption-label {
+    font-weight: bold;
+    color: #2e7d32;
+}
+
+.gas-consumption-value {
+    font-size: 16px;
+    font-weight: bold;
+    color: #2e7d32;
+}
+
+/* Стилі для завантаження файлів для газу */
+.gas-file-upload {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #ddd;
+}
+
+.gas-drop-area {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fafafa;
+}
+
+.gas-drop-area.dragover {
+    border-color: #4CAF50;
+    background: #e8f5e9;
+}
+
+.drop-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.drop-text {
+    font-size: 14px;
+    color: #666;
+}
+
+.drop-hint {
+    font-size: 12px;
+    color: #999;
+    margin-top: 5px;
+}
+
+.selected-file-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px;
+    background: #e3f2fd;
+    border-radius: 4px;
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+.cancel-file-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #f44336;
+    padding: 0 5px;
+}
+
+.upload-gas-file-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 8px;
+    background: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.upload-gas-file-btn:hover:not(:disabled) {
+    background: #1976D2;
+}
+
+.upload-gas-file-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.uploaded-gas-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    background: #e8f5e9;
+    border-radius: 4px;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.file-icon {
+    font-size: 20px;
+}
+
+.file-name {
+    font-size: 13px;
+    color: #2e7d32;
+}
+
+.file-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.view-file-btn {
+    padding: 4px 8px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.remove-file-btn {
+    padding: 4px 8px;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+/* Адаптивність для мобільних */
+@media (max-width: 768px) {
+    .gas-meter-fields {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .gases-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+
+    .add-gas-btn {
+        width: 100%;
+    }
+}
+
+/* Стилі для секції записів */
+.records-section {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.records-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ddd;
+}
+
+.records-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.add-record-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.add-record-btn:hover:not(:disabled) {
+    background: #45a049;
+}
+
+.records-summary {
+    display: flex;
+    gap: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+}
+
+.summary-item {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 6px;
+}
+
+.summary-item span {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.summary-item strong {
+    font-size: 18px;
+    color: #333;
+}
+
+.records-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Стилі для картки запису */
+.work-record-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.work-record-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.work-record-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+.record-number {
+    background: #4CAF50;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin-right: 10px;
+}
+
+.record-date {
+    font-size: 11px;
+    color: #999;
+    font-weight: normal;
+}
+
+.record-remove {
+    background: #ff4444;
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s;
+}
+
+.record-remove:hover:not(:disabled) {
+    background: #cc0000;
+}
+
+.work-record-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.record-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.record-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.record-field label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #555;
+}
+
+.record-input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.record-input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.checkbox-field {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Стилі для порізаних деталей */
+.cut-details-section {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    border: 1px solid #e8e8e8;
+}
+
+.cut-details-label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #555;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.cut-details-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 10px;
+}
+
+.cut-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px;
+    background: white;
+    border-radius: 4px;
+}
+
+.cut-detail-name {
+    flex: 1;
+    font-size: 12px;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cut-detail-input {
+    width: 70px;
+    padding: 4px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 12px;
+    text-align: center;
+}
+
+.cut-detail-unit {
+    font-size: 11px;
+    color: #666;
+}
+
+/* Інформаційна панель */
+.record-info-panel {
+    display: flex;
+    gap: 20px;
+    padding: 10px;
+    background: #e8f5e9;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+.record-consumption, .record-time, .record-gas-type {
+    display: flex;
+    gap: 8px;
+    font-size: 12px;
+}
+
+.record-consumption span, .record-time span, .record-gas-type span {
+    color: #666;
+}
+
+.record-consumption strong, .record-time strong, .record-gas-type strong {
+    color: #2e7d32;
+}
+
+/* Стилі для завантаження файлів */
+.record-file-upload {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #ddd;
+}
+
+.record-drop-area {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fafafa;
+}
+
+.record-drop-area.dragover {
+    border-color: #4CAF50;
+    background: #e8f5e9;
+}
+
+.uploaded-record-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    background: #e8f5e9;
+    border-radius: 4px;
+}
+
+.upload-record-file-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 8px;
+    background: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+@media (max-width: 768px) {
+    .record-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .records-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+
+    .add-record-btn {
+        width: 100%;
+    }
+
+    .records-summary {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .cut-details-list {
+        grid-template-columns: 1fr;
+    }
+
+    .record-info-panel {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+/* Стилі для модального вікна перегляду файлу */
+.file-preview-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.file-preview-modal {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 1200px;
+    height: 90%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.file-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+}
+
+.file-preview-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.file-preview-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s;
+}
+
+.file-preview-close:hover {
+    color: #ff4444;
+}
+
+.file-preview-content {
+    flex: 1;
+    overflow: auto;
+    padding: 20px;
+    background: #fafafa;
+}
+
+.file-preview-iframe {
+    width: 100%;
+    height: 100%;
+    min-height: 500px;
+    border: none;
+    background: white;
+}
+
+.file-preview-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px 20px;
+    background: #f5f5f5;
+    border-top: 1px solid #ddd;
+}
+
+.file-preview-download {
+    padding: 8px 16px;
+    background: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.file-preview-download:hover {
+    background: #45a049;
+}
+
+.file-preview-close-btn {
+    padding: 8px 16px;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.file-preview-close-btn:hover {
+    background: #cc0000;
+}
+
+/* CuttingJobExecution.css */
+
+.actual-quantity-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.actual-from-records {
+    font-size: 16px;
+    font-weight: bold;
+    color: #2c5a2c;
+    background: #e8f5e9;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.actual-warning {
+    color: #ff9800;
+    font-size: 18px;
+    cursor: help;
+}
+
+.rejection-input {
+    width: 80px;
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.rejection-input:focus {
+    outline: none;
+    border-color: #ff9800;
+    box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.2);
+}
+
+/* Стиль для автоматично розрахованого поля */
+.actual-quantity-display .actual-from-records {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+/* Якщо значення відрізняється від ручного */
+.actual-quantity-display .actual-from-records.warning {
+    background: #fff3e0;
+    color: #f57c00;
+}

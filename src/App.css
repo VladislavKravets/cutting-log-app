@@ -7,7 +7,14 @@
   text-align: center;
   min-height: 100vh;
   /*background-color: #4B5563; !* Дуже світлий сірий фон *!*/
-  font-family: 'Inter', sans-serif;
+  /*font-family: 'Inter', sans-serif;*/
+  /*  background: linear-gradient(*/
+  /*  to bottom,*/
+  /*  #0a1a3a,*/
+  /*  #1a2b55,*/
+  /*  #2c3e6d,*/
+  /*  #3a4a7a*/
+  /*  );*/
 }
 
 /* ----------------------------------------------------------------
@@ -21,8 +28,9 @@ header {
   /*top: 0;*/
   /*z-index: 50;*/
     border-bottom: 1px solid #E5E7EB;
-    width: 70%;
-    margin: auto;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
     border-radius: 10px;
 }
 
@@ -110,7 +118,7 @@ header {
 
 .App-content {
   padding: 20px;
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 0 auto;
 }
 

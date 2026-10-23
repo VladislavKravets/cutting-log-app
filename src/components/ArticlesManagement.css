@@ -863,3 +863,233 @@
         padding: 2px 6px;
     }
 }
+
+/* Стилі для завантаження файлів */
+.file-upload-section {
+    margin: 20px 0;
+    padding: 20px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.upload-label {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: bold;
+    color: #333;
+}
+
+.upload-drop-area {
+    border: 2px dashed #ccc;
+    border-radius: 6px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.upload-drop-area:hover,
+.upload-drop-area.dragover {
+    border-color: #007bff;
+    background: #f0f8ff;
+}
+
+.upload-drop-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.upload-drop-text {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.upload-drop-hint {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.browse-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.browse-btn:hover {
+    background: #0056b3;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin: 15px 0;
+}
+
+.file-icon {
+    font-size: 24px;
+    margin-right: 15px;
+}
+
+.file-details {
+    flex: 1;
+}
+
+.file-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.file-size {
+    color: #666;
+    font-size: 14px;
+}
+
+.remove-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.remove-btn:hover:not(:disabled) {
+    background: #c82333;
+}
+
+.remove-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+.upload-progress {
+    margin: 15px 0;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #28a745;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 14px;
+    color: #666;
+}
+
+.upload-success {
+    color: #28a745;
+    font-weight: bold;
+    margin: 10px 0;
+    padding: 10px;
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+}
+
+.upload-error {
+    color: #dc3545;
+    font-weight: bold;
+    margin: 10px 0;
+    padding: 10px;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+}
+
+.file-input {
+    display: none;
+}
+
+.upload-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.upload-btn:hover:not(:disabled) {
+    background: #218838;
+}
+
+.upload-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+.file-url-field {
+    margin-top: 20px;
+}
+
+.url-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.url-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.url-hint {
+    display: block;
+    margin-top: 5px;
+    color: #666;
+    font-size: 12px;
+}
+
+/* Адаптивність */
+@media (max-width: 768px) {
+    .file-upload-section {
+        padding: 15px;
+    }
+
+    .upload-drop-area {
+        padding: 20px;
+    }
+
+    .file-info {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .file-icon {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+}

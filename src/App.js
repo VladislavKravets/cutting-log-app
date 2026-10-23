@@ -27,6 +27,8 @@ import AutumnAnimation from "./background/AutumnAnimation";
 import MiniChat from "./components/Chat/MiniChat";
 import FileServerUrlChanger from "./components/FileServerUrlChanger";
 import CuttingReportsFileManager from "./components/FileManager/CuttingReportsFileManager";
+import WinterBackground from "./background/WinterBackground";
+import SpringBackground from "./background/SpringBackground";
 
 // Компонент-обгортка для захищених маршрутів
 const ProtectedRoute = ({ element: Element, ...props }) => (
@@ -184,9 +186,10 @@ function App() {
                 <Navigation />
             </header>
 
-            {/*<StarryBackground titleText="ЖУРНАЛ ЛАЗЕРНОЇ РІЗКИ" />*/} {/* Обычный фон */}
+            <StarryBackground titleText="ЖУРНАЛ ЛАЗЕРНОЇ РІЗКИ" />
             {/*<FallingLeavesBackground/> /!* Осенний фон *!/*/}
-            <AutumnAnimation/>
+            {/*<WinterBackground/>*/}
+            {/*    {<SpringBackground/>}*/}
             <MiniChat/>
             <main className="App-content">
                 <Routes>

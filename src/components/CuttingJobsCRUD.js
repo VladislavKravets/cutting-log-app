@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import {useSearchParams} from 'react-router-dom';
 import {supabase} from '../supabaseClient';
 import './CuttingJobsCRUD.css';
@@ -11,33 +11,184 @@ const CuttingJobsCRUD = () => {
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingJob, setEditingJob] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
     const [selectedJobDetails, setSelectedJobDetails] = useState(null);
     const [articleSearchTerm, setArticleSearchTerm] = useState('');
-    const [sortConfig, setSortConfig] = useState({key: null, direction: 'asc'});
-
-    // Додаємо стани для пагінації
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
-
-    // Додаємо стани для фільтрів
-    const [statusFilter, setStatusFilter] = useState('');
-    const [thicknessFilter, setThicknessFilter] = useState('');
-    const [metalAvailableFilter, setMetalAvailableFilter] = useState(''); // Новий фільтр
+    const [prioritySelectJobId, setPrioritySelectJobId] = useState(null);
 
     const [searchParams, setSearchParams] = useSearchParams();
 
+    // Ключ для збереження в sessionStorage
+    const STORAGE_KEY = 'cutting_jobs_filters';
+
+    // Функція для завантаження стану з sessionStorage або URL
+    const loadStateFromStorage = () => {
+        try {
+            // Спочатку пробуємо завантажити з sessionStorage
+            const savedState = sessionStorage.getItem(STORAGE_KEY);
+            if (savedState) {
+                const parsed = JSON.parse(savedState);
+                // Перевіряємо, чи є в URL параметри, які мають пріоритет
+                const hasUrlParams = searchParams.toString().length > 0;
+                if (!hasUrlParams) {
+                    return parsed;
+                }
+            }
+        } catch (e) {
+            console.error('Помилка завантаження стану:', e);
+        }
+        return null;
+    };
+
+    // Завантаження стану з URL
+    const loadStateFromUrl = () => {
+        return {
+            searchTerm: searchParams.get('search') || '',
+            statusFilter: searchParams.get('status') || '',
+            thicknessFilter: searchParams.get('thickness') || '',
+            metalAvailableFilter: searchParams.get('metal') || '',
+            cuttingNeedFilter: searchParams.get('cutting') || '',
+            showAllJobs: searchParams.get('showAll') === 'true',
+            sortKey: searchParams.get('sortKey') || null,
+            sortDirection: searchParams.get('sortDirection') || 'asc',
+            currentPage: parseInt(searchParams.get('page')) || 1,
+            itemsPerPage: parseInt(searchParams.get('perPage')) || 10,
+            selectedJobDetails: searchParams.get('id') ? parseInt(searchParams.get('id')) : null
+        };
+    };
+
+    // Ініціалізація станів
+    const [searchTerm, setSearchTerm] = useState(() => {
+        const saved = loadStateFromStorage();
+        if (saved && saved.searchTerm !== undefined) return saved.searchTerm;
+        return searchParams.get('search') || '';
+    });
+
+    const [statusFilter, setStatusFilter] = useState(() => {
+        const saved = loadStateFromStorage();
+        if (saved && saved.statusFilter !== undefined) return saved.statusFilter;
+        return searchParams.get('status') || '';
+    });
+
+    const [thicknessFilter, setThicknessFilter] = useState(() => {
+        const saved = loadStateFromStorage();
+        if (saved && saved.thicknessFilter !== undefined) return saved.thicknessFilter;
+        return searchParams.get('thickness') || '';
+    });
+
+    const [metalAvailableFilter, setMetalAvailableFilter] = useState(() => {
+        const saved = loadStateFromStorage();
+        if (saved && saved.metalAvailableFilter !== undefined) return saved.metalAvailableFilter;
+        return searchParams.get('metal') || '';
+    });
+
+    const [cuttingNeedFilter, setCuttingNeedFilter] = useState(() => {
+        const saved = loadStateFromStorage();
+        if (saved && saved.cuttingNeedFilter !== undefined) return saved.cuttingNeedFilter;
+        return searchParams.get('cutting') || '';
+    });
+
+    const [showAllJobs, setShowAllJobs] = useState(() => {
+        const saved = loadStateFromStorage();
+        if (saved && saved.showAllJobs !== undefined) return saved.showAllJobs;
+        return searchParams.get('showAll') === 'true';
+    });
+
+    const [sortConfig, setSortConfig] = useState(() => {
+        const saved = loadStateFromStorage();
+        if (saved && saved.sortKey !== undefined) {
+            return {key: saved.sortKey, direction: saved.sortDirection || 'asc'};
+        }
+        return {
+            key: searchParams.get('sortKey') || null,
+            direction: searchParams.get('sortDirection') || 'asc'
+        };
+    });
+
+    const [currentPage, setCurrentPage] = useState(() => {
+        const saved = loadStateFromStorage();
+        if (saved && saved.currentPage !== undefined) return saved.currentPage;
+        return parseInt(searchParams.get('page')) || 1;
+    });
+
+    const [itemsPerPage, setItemsPerPage] = useState(() => {
+        const saved = loadStateFromStorage();
+        if (saved && saved.itemsPerPage !== undefined) return saved.itemsPerPage;
+        return parseInt(searchParams.get('perPage')) || 10;
+    });
+
     // Форма для нового/редагування завдання
     const [formData, setFormData] = useState({
-        due_date: '', status: 'В черзі', notes: '', metal_available: false // Додаємо поле для металу
+        // due_date: '',
+        status: 'В черзі',
+        notes: '',
+        metal_available: false,
+        cutting_need: false,
+        priority: 3
     });
 
     // Форма для деталей завдання (артикули)
     const [jobDetailForm, setJobDetailForm] = useState({
-        article_id: '', quantity_planned: ''
+        article_id: '',
+        quantity_planned: ''
     });
 
     const jobIdFromUrl = searchParams.get('id');
+
+    // Збереження стану в sessionStorage та URL
+    useEffect(() => {
+        // Зберігаємо в sessionStorage
+        const stateToSave = {
+            searchTerm,
+            statusFilter,
+            thicknessFilter,
+            metalAvailableFilter,
+            cuttingNeedFilter,
+            showAllJobs,
+            sortKey: sortConfig.key,
+            sortDirection: sortConfig.direction,
+            currentPage,
+            itemsPerPage,
+            selectedJobDetails
+        };
+        try {
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+        } catch (e) {
+            console.error('Помилка збереження стану:', e);
+        }
+
+        // Оновлюємо URL
+        const params = new URLSearchParams();
+
+        if (searchTerm) params.set('search', searchTerm);
+        if (statusFilter) params.set('status', statusFilter);
+        if (thicknessFilter) params.set('thickness', thicknessFilter);
+        if (metalAvailableFilter) params.set('metal', metalAvailableFilter);
+        if (cuttingNeedFilter) params.set('cutting', cuttingNeedFilter);
+        if (showAllJobs) params.set('showAll', 'true');
+        if (sortConfig.key) {
+            params.set('sortKey', sortConfig.key);
+            params.set('sortDirection', sortConfig.direction);
+        }
+        if (currentPage > 1) params.set('page', currentPage.toString());
+        if (itemsPerPage !== 10) params.set('perPage', itemsPerPage.toString());
+        if (selectedJobDetails) params.set('id', selectedJobDetails.toString());
+
+        setSearchParams(params);
+    }, [
+        searchTerm, statusFilter, thicknessFilter,
+        metalAvailableFilter, cuttingNeedFilter, showAllJobs,
+        sortConfig, currentPage, itemsPerPage, selectedJobDetails
+    ]);
+
+    // Відновлення selectedJobDetails з URL при завантаженні
+    useEffect(() => {
+        if (jobIdFromUrl && jobs.length > 0) {
+            const jobExists = jobs.find(job => job.job_id.toString() === jobIdFromUrl);
+            if (jobExists) {
+                setSelectedJobDetails(parseInt(jobIdFromUrl));
+            }
+        }
+    }, [jobIdFromUrl, jobs]);
 
     // Завантаження даних
     useEffect(() => {
@@ -57,7 +208,6 @@ const CuttingJobsCRUD = () => {
             });
         };
 
-        // Перевіряємо при завантаженні та при зміні розміру вікна
         checkScrollable();
         window.addEventListener('resize', checkScrollable);
 
@@ -66,35 +216,13 @@ const CuttingJobsCRUD = () => {
         };
     }, []);
 
-    // Ефект для автоматичного відкриття деталей завдання при завантаженні з параметром ID
-    useEffect(() => {
-        if (jobIdFromUrl && jobs.length > 0) {
-            const jobExists = jobs.find(job => job.job_id.toString() === jobIdFromUrl);
-            if (jobExists) {
-                setSelectedJobDetails(parseInt(jobIdFromUrl));
-
-                // Знаходимо сторінку, на якій знаходиться завдання
-                const jobIndex = filteredJobs.findIndex(job => job.job_id.toString() === jobIdFromUrl);
-                if (jobIndex !== -1) {
-                    const page = Math.ceil((jobIndex + 1) / itemsPerPage);
-                    setCurrentPage(page);
-                }
-
-                // Прокрутка до завдання
-                setTimeout(() => {
-                    const element = document.getElementById(`job-${jobIdFromUrl}`);
-                    if (element) {
-                        element.scrollIntoView({behavior: 'smooth', block: 'center'});
-                    }
-                }, 500);
-            }
-        }
-    }, [jobIdFromUrl, jobs]);
-
     // Скидання сторінки при зміні пошуку або фільтрації
     useEffect(() => {
-        setCurrentPage(1);
-    }, [searchTerm, sortConfig, statusFilter, thicknessFilter, metalAvailableFilter]);
+        const pageFromUrl = searchParams.get('page');
+        if (!pageFromUrl) {
+            setCurrentPage(1);
+        }
+    }, [searchTerm, sortConfig, statusFilter, thicknessFilter, metalAvailableFilter, cuttingNeedFilter, showAllJobs]);
 
     function formatToCustomString(date) {
         const year = date.getFullYear();
@@ -115,7 +243,6 @@ const CuttingJobsCRUD = () => {
         try {
             setLoading(true);
 
-            // Завантажуємо завдання
             const {data: jobsData, error: jobsError} = await supabase
                 .from('cutting_jobs')
                 .select('*')
@@ -123,7 +250,6 @@ const CuttingJobsCRUD = () => {
 
             if (jobsError) throw jobsError;
 
-            // Завантажуємо артикули
             const {data: articlesData, error: articlesError} = await supabase
                 .from('articles')
                 .select('*')
@@ -131,7 +257,6 @@ const CuttingJobsCRUD = () => {
 
             if (articlesError) throw articlesError;
 
-            // Завантажуємо деталі завдань
             const {data: detailsData, error: detailsError} = await supabase
                 .from('job_details')
                 .select(`
@@ -141,7 +266,6 @@ const CuttingJobsCRUD = () => {
 
             if (detailsError) throw detailsError;
 
-            // Завантажуємо програми різання
             const {data: programsData, error: programsError} = await supabase
                 .from('cutting_programs')
                 .select('*');
@@ -160,44 +284,155 @@ const CuttingJobsCRUD = () => {
         }
     };
 
-    // Отримання назви файлу для завдання
     const getJobFileName = (jobId) => {
         const program = cuttingPrograms.find(program => program.job_id === jobId);
         return program?.file_name || 'Н/Ф';
     };
 
-    // Отримання унікальних товщин для завдання
     const getJobThicknesses = (jobId) => {
         const details = jobDetails.filter(detail => detail.job_id === jobId);
         const thicknesses = [...new Set(details.map(detail => detail.articles?.thickness).filter(Boolean))];
         return thicknesses.join(', ') || 'Н/Д';
     };
 
-    // Отримання унікальних матеріалів для завдання
     const getJobMaterials = (jobId) => {
         const details = jobDetails.filter(detail => detail.job_id === jobId);
         const materials = [...new Set(details.map(detail => detail.articles?.material_type).filter(Boolean))];
         return materials.join(', ') || 'Н/Д';
     };
 
-    // Фільтрація завдань
-    const filteredJobs = jobs.filter(job => {
-        // Фільтр по пошуку
-        const matchesSearch = job.notes?.toLowerCase().includes(searchTerm.toLowerCase()) || job.status?.toLowerCase().includes(searchTerm.toLowerCase()) || job.job_id?.toString().includes(searchTerm) || getJobFileName(job.job_id).toLowerCase().includes(searchTerm.toLowerCase());
+    const getPriorityName = (priority) => {
+        switch(priority) {
+            case 1: return 'Срочно';
+            case 2: return 'Високий';
+            case 3: return 'Середній';
+            case 4: return 'Низький';
+            case 5: return 'Мінімальний';
+            default: return 'Середній';
+        }
+    };
 
-        // Фільтр по статусу
-        const matchesStatus = !statusFilter || job.status === statusFilter;
+    const updatePriority = async (jobId, newPriority) => {
+        try {
+            const {error} = await supabase
+                .from('cutting_jobs')
+                .update({priority: newPriority})
+                .eq('job_id', jobId);
 
-        // Фільтр по товщині
-        const matchesThickness = !thicknessFilter || jobDetails.some(detail => detail.job_id === job.job_id && detail.articles?.thickness?.toString().includes(thicknessFilter));
+            if (error) throw error;
 
-        // Фільтр по наявності металу
-        const matchesMetalAvailable = !metalAvailableFilter || (metalAvailableFilter === 'yes' && job.metal_available && job.status !== 'Виконано') || (metalAvailableFilter === 'no' && !job.metal_available && job.status !== 'Виконано');
+            setJobs(jobs.map(job =>
+                job.job_id === jobId ? {...job, priority: newPriority} : job
+            ));
 
-        return matchesSearch && matchesStatus && matchesThickness && matchesMetalAvailable;
-    });
+            console.log(`Пріоритет завдання ${jobId} змінено на ${newPriority}`);
+        } catch (error) {
+            console.error('Помилка оновлення пріоритету:', error);
+            alert('Помилка оновлення пріоритету');
+        }
+    };
 
-    // Сортування таблиці
+    const handlePriorityClick = (jobId, e) => {
+        e.stopPropagation();
+        setPrioritySelectJobId(prioritySelectJobId === jobId ? null : jobId);
+    };
+
+    const handlePriorityChange = async (jobId, newPriority) => {
+        try {
+            await updatePriority(jobId, newPriority);
+            setPrioritySelectJobId(null);
+        } catch (error) {
+            console.error('Помилка зміни пріоритету:', error);
+        }
+    };
+
+    const toggleCuttingNeed = async (jobId, currentValue) => {
+        const job = jobs.find(j => j.job_id === jobId);
+
+        if (job?.status === 'Виконано') {
+            alert('Не можна змінювати потребу в розкрої для виконаного завдання');
+            return;
+        }
+
+        try {
+            const newValue = !currentValue;
+
+            const {error} = await supabase
+                .from('cutting_jobs')
+                .update({cutting_need: newValue})
+                .eq('job_id', jobId);
+
+            if (error) throw error;
+
+            setJobs(jobs.map(job => job.job_id === jobId ? {...job, cutting_need: newValue} : job));
+
+            console.log(`Потреба в розкрої ${newValue ? 'активна' : 'неактивна'} для завдання ${jobId}`);
+        } catch (error) {
+            console.error('Помилка оновлення потреби в розкрої:', error);
+            alert('Помилка оновлення потреби в розкрої');
+        }
+    };
+
+    const toggleMetalAvailable = async (jobId, currentValue) => {
+        const job = jobs.find(j => j.job_id === jobId);
+
+        if (job?.status === 'Виконано') {
+            alert('Не можна змінювати наявність металу для виконаного завдання');
+            return;
+        }
+
+        try {
+            const newValue = !currentValue;
+
+            const {error} = await supabase
+                .from('cutting_jobs')
+                .update({metal_available: newValue})
+                .eq('job_id', jobId);
+
+            if (error) throw error;
+
+            setJobs(jobs.map(job => job.job_id === jobId ? {...job, metal_available: newValue} : job));
+
+            console.log(`Метал ${newValue ? 'доступний' : 'недоступний'} для завдання ${jobId}`);
+        } catch (error) {
+            console.error('Помилка оновлення статусу металу:', error);
+            alert('Помилка оновлення статусу металу');
+        }
+    };
+
+    // Функція для отримання відфільтрованих завдань
+    const getFilteredJobs = (jobsList) => {
+        return jobsList.filter(job => {
+            // Фільтр "Показувати всі" - якщо вимкнено, приховуємо виконані
+            if (!showAllJobs && job.status === 'Виконано') {
+                return false;
+            }
+
+            const matchesSearch = job.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                job.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                job.job_id?.toString().includes(searchTerm) ||
+                getJobFileName(job.job_id).toLowerCase().includes(searchTerm.toLowerCase()) ||
+                getPriorityName(job.priority).toLowerCase().includes(searchTerm.toLowerCase());
+
+            const matchesStatus = !statusFilter || job.status === statusFilter;
+
+            const matchesThickness = !thicknessFilter || jobDetails.some(detail => detail.job_id === job.job_id && detail.articles?.thickness?.toString().includes(thicknessFilter));
+
+            const matchesMetalAvailable = !metalAvailableFilter ||
+                (metalAvailableFilter === 'yes' && job.metal_available) ||
+                (metalAvailableFilter === 'no' && !job.metal_available);
+
+            const matchesCuttingNeed = !cuttingNeedFilter ||
+                (cuttingNeedFilter === 'yes' && job.cutting_need) ||
+                (cuttingNeedFilter === 'no' && !job.cutting_need);
+
+            return matchesSearch && matchesStatus && matchesThickness && matchesMetalAvailable && matchesCuttingNeed;
+        });
+    };
+
+    // Оновлена фільтрація з використанням getFilteredJobs
+    const filteredJobs = getFilteredJobs(jobs);
+
     const handleSort = (key) => {
         let direction = 'asc';
         if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -206,20 +441,36 @@ const CuttingJobsCRUD = () => {
         setSortConfig({key, direction});
     };
 
-    const sortedJobs = React.useMemo(() => {
+    const sortedJobs = useMemo(() => {
         if (!sortConfig.key) return filteredJobs;
 
         return [...filteredJobs].sort((a, b) => {
             const aValue = a[sortConfig.key];
             const bValue = b[sortConfig.key];
 
-            // Спеціальна логіка для сортування булевих значень
             if (sortConfig.key === 'metal_available') {
                 if (aValue === bValue) return 0;
                 if (sortConfig.direction === 'asc') {
                     return aValue ? -1 : 1;
                 } else {
                     return aValue ? 1 : -1;
+                }
+            }
+
+            if (sortConfig.key === 'cutting_need') {
+                if (aValue === bValue) return 0;
+                if (sortConfig.direction === 'asc') {
+                    return aValue ? -1 : 1;
+                } else {
+                    return aValue ? 1 : -1;
+                }
+            }
+
+            if (sortConfig.key === 'priority') {
+                if (sortConfig.direction === 'asc') {
+                    return aValue - bValue;
+                } else {
+                    return bValue - aValue;
                 }
             }
 
@@ -233,14 +484,10 @@ const CuttingJobsCRUD = () => {
         });
     }, [filteredJobs, sortConfig]);
 
-    // Пагінація
     const totalItems = sortedJobs.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-    // Обчислюємо завдання для поточної сторінки
     const currentJobs = sortedJobs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-    // Функції для навігації по сторінках
     const goToPage = (page) => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
@@ -251,7 +498,6 @@ const CuttingJobsCRUD = () => {
     const goToNextPage = () => goToPage(currentPage + 1);
     const goToPrevPage = () => goToPage(currentPage - 1);
 
-    // Генерація номерів сторінок для відображення
     const getPageNumbers = () => {
         const pages = [];
         const maxVisiblePages = 5;
@@ -270,16 +516,11 @@ const CuttingJobsCRUD = () => {
         return pages;
     };
 
-    // Функція для перемикання деталей завдання з оновленням URL
     const toggleJobDetails = (jobId) => {
         if (selectedJobDetails === jobId) {
             setSelectedJobDetails(null);
-            searchParams.delete('id');
-            setSearchParams(searchParams);
         } else {
             setSelectedJobDetails(jobId);
-            searchParams.set('id', jobId.toString());
-            setSearchParams(searchParams);
 
             setTimeout(() => {
                 const element = document.getElementById(`job-${jobId}`);
@@ -290,7 +531,6 @@ const CuttingJobsCRUD = () => {
         }
     };
 
-    // Функція для копіювання посилання на завдання
     const copyJobLink = (jobId) => {
         const currentUrl = window.location.origin + '/cutting-log-app/#' + '/view/jobs';
         const jobUrl = `${currentUrl}?id=${jobId}`;
@@ -305,12 +545,13 @@ const CuttingJobsCRUD = () => {
             });
     };
 
-    // Створення нового завдання
     const createJob = async (e) => {
         e.preventDefault();
         try {
             const jobData = {
-                ...formData, creation_date: formatToCustomString(new Date())
+                ...formData,
+                priority: formData.priority || 3,
+                creation_date: formatToCustomString(new Date())
             };
 
             const {data, error} = await supabase
@@ -333,17 +574,18 @@ const CuttingJobsCRUD = () => {
         }
     };
 
-    // Оновлення завдання
     const updateJob = async (e) => {
         e.preventDefault();
         try {
             const {error} = await supabase
                 .from('cutting_jobs')
                 .update({
-                    due_date: formData.due_date,
+                    // due_date: formData.due_date,
                     status: formData.status,
                     notes: formData.notes,
-                    metal_available: formData.metal_available
+                    metal_available: formData.metal_available,
+                    cutting_need: formData.cutting_need,
+                    priority: formData.priority
                 })
                 .eq('job_id', editingJob.job_id);
 
@@ -351,10 +593,12 @@ const CuttingJobsCRUD = () => {
 
             setJobs(jobs.map(job => job.job_id === editingJob.job_id ? {
                 ...job,
-                due_date: formData.due_date,
+                // due_date: formData.due_date,
                 status: formData.status,
                 notes: formData.notes,
-                metal_available: formData.metal_available
+                metal_available: formData.metal_available,
+                cutting_need: formData.cutting_need,
+                priority: formData.priority
             } : job));
 
             resetForm();
@@ -366,12 +610,10 @@ const CuttingJobsCRUD = () => {
         }
     };
 
-    // Видалення завдання
     const deleteJob = async (jobId) => {
         if (!window.confirm('Ви впевнені, що хочете видалити це завдання?')) return;
 
         try {
-            // Спочатку видаляємо пов'язані деталі завдання
             const {error: detailsError} = await supabase
                 .from('job_details')
                 .delete()
@@ -379,7 +621,6 @@ const CuttingJobsCRUD = () => {
 
             if (detailsError) throw detailsError;
 
-            // Видаляємо програми різання
             const {error: programsError} = await supabase
                 .from('cutting_programs')
                 .delete()
@@ -387,7 +628,6 @@ const CuttingJobsCRUD = () => {
 
             if (programsError) throw programsError;
 
-            // Потім видаляємо саме завдання
             const {error} = await supabase
                 .from('cutting_jobs')
                 .delete()
@@ -401,8 +641,6 @@ const CuttingJobsCRUD = () => {
 
             if (selectedJobDetails === jobId) {
                 setSelectedJobDetails(null);
-                searchParams.delete('id');
-                setSearchParams(searchParams);
             }
 
             alert('Завдання успішно видалено!');
@@ -412,7 +650,6 @@ const CuttingJobsCRUD = () => {
         }
     };
 
-    // Додавання артикулу до завдання
     const addArticleToJob = async (jobId) => {
         if (!jobDetailForm.article_id) {
             alert('Будь ласка, виберіть артикул');
@@ -447,7 +684,6 @@ const CuttingJobsCRUD = () => {
         }
     };
 
-    // Оновлення кількості артикулу в завданні
     const updateArticleQuantity = async (jobDetailId, newQuantity) => {
         if (newQuantity < 1) {
             alert('Кількість не може бути менше 1');
@@ -474,7 +710,6 @@ const CuttingJobsCRUD = () => {
         }
     };
 
-    // Видалення артикулу з завдання
     const removeArticleFromJob = async (jobDetailId) => {
         if (!window.confirm('Видалити цей артикул з завдання?')) return;
 
@@ -494,48 +729,26 @@ const CuttingJobsCRUD = () => {
         }
     };
 
-    // Функція для швидкого перемикання наявності металу
-    const toggleMetalAvailable = async (jobId, currentValue) => {
-        const job = jobs.find(j => j.job_id === jobId);
-
-        // Перевіряємо, чи завдання не виконане
-        if (job?.status === 'Виконано') {
-            alert('Не можна змінювати наявність металу для виконаного завдання');
-            return;
-        }
-
-        try {
-            const newValue = !currentValue;
-
-            const {error} = await supabase
-                .from('cutting_jobs')
-                .update({metal_available: newValue})
-                .eq('job_id', jobId);
-
-            if (error) throw error;
-
-            setJobs(jobs.map(job => job.job_id === jobId ? {...job, metal_available: newValue} : job));
-
-            console.log(`Метал ${newValue ? 'доступний' : 'недоступний'} для завдання ${jobId}`);
-        } catch (error) {
-            console.error('Помилка оновлення статусу металу:', error);
-            alert('Помилка оновлення статусу металу');
-        }
-    };
-
     const resetForm = () => {
         setFormData({
-            due_date: '', status: 'В черзі', notes: '', metal_available: false
+            // due_date: '',
+            status: 'В черзі',
+            notes: '',
+            metal_available: false,
+            cutting_need: false,
+            priority: 3
         });
         setEditingJob(null);
     };
 
     const startEdit = (job) => {
         setFormData({
-            due_date: job.due_date,
+            // due_date: job.due_date,
             status: job.status,
             notes: job.notes || '',
-            metal_available: job.metal_available || false
+            metal_available: job.metal_available || false,
+            cutting_need: job.cutting_need || false,
+            priority: job.priority || 3
         });
         setEditingJob(job);
         setShowForm(true);
@@ -546,15 +759,22 @@ const CuttingJobsCRUD = () => {
         setShowForm(true);
     };
 
-    // Фільтрація артикулів для пошуку
-    const filteredArticles = articles.filter(article => article.name?.toLowerCase().includes(articleSearchTerm.toLowerCase()) || article.article_num?.toLowerCase().includes(articleSearchTerm.toLowerCase()) || article.material_type?.toLowerCase().includes(articleSearchTerm.toLowerCase()));
+    const filteredArticles = articles.filter(article =>
+        article.name?.toLowerCase().includes(articleSearchTerm.toLowerCase()) ||
+        article.article_num?.toLowerCase().includes(articleSearchTerm.toLowerCase()) ||
+        article.material_type?.toLowerCase().includes(articleSearchTerm.toLowerCase())
+    );
 
-    // Форматування дати
     const formatDate = (dateString) => {
         if (!dateString) return '-';
         const date = new Date(dateString);
         return date.toLocaleString('uk-UA', {
-            year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
         });
     };
 
@@ -563,30 +783,38 @@ const CuttingJobsCRUD = () => {
         return sortConfig.direction === 'asc' ? '↑' : '↓';
     };
 
-    // Очищення всіх фільтрів
     const clearAllFilters = () => {
         setSearchTerm('');
         setStatusFilter('');
         setThicknessFilter('');
         setMetalAvailableFilter('');
+        setCuttingNeedFilter('');
         setArticleSearchTerm('');
+        setPrioritySelectJobId(null);
+        setShowAllJobs(false);
+        setSortConfig({key: null, direction: 'asc'});
+        setCurrentPage(1);
+        setItemsPerPage(10);
+        setSelectedJobDetails(null);
+        // Очищаємо sessionStorage
+        try {
+            sessionStorage.removeItem(STORAGE_KEY);
+        } catch (e) {
+            console.error('Помилка очищення стану:', e);
+        }
     };
 
     if (loading) {
         return <div className="loading">Завантаження...</div>;
     }
 
-    return (<div className="cutting-tasks-management">
+    return (
+        <div className="cutting-tasks-management">
             <div className="tasks-header">
                 <h1>Управління Завданнями</h1>
                 <div>
                     <button className="task-create-btn" onClick={startCreate}>
                         + Створити Завдання
-                    </button>
-                    <button
-                        className="task-create-btn"
-                        onClick={() => window.location.href='cutting-log-app/#/view/reports'}>
-                        Робота з файлами
                     </button>
                 </div>
             </div>
@@ -594,19 +822,17 @@ const CuttingJobsCRUD = () => {
             {/* Фільтри */}
             <div className="tasks-filters">
                 <div className="filters-row">
-                    {/* Пошук */}
                     <div className="filter-item">
                         <label>Пошук:</label>
                         <input
                             type="text"
-                            placeholder="Пошук за ID, нотатками, статусом або файлом..."
+                            placeholder="Пошук за ID, нотатками, статусом, пріоритетом або файлом..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="filter-input"
                         />
                     </div>
 
-                    {/* Фільтр по статусу */}
                     <div className="filter-item">
                         <label>Статус:</label>
                         <select
@@ -616,12 +842,12 @@ const CuttingJobsCRUD = () => {
                             <option value="">Всі статуси</option>
                             <option value="В черзі">В черзі</option>
                             <option value="В роботі">В роботі</option>
+                            <option value="Частково виконано">Частково виконано</option>
                             <option value="Виконано">Виконано</option>
                             <option value="Скасовано">Скасовано</option>
                         </select>
                     </div>
 
-                    {/* Фільтр по товщині */}
                     <div className="filter-item">
                         <label>Товщина (мм):</label>
                         <input
@@ -634,14 +860,8 @@ const CuttingJobsCRUD = () => {
                         />
                     </div>
 
-                    {/* Новий фільтр по наявності металу */}
                     <div className="filter-item">
-                        <label>
-                            Метал:
-                            <div className="filter-hint">
-                                (не враховує виконані завдання)
-                            </div>
-                        </label>
+                        <label>Метал:</label>
                         <select
                             value={metalAvailableFilter}
                             onChange={(e) => setMetalAvailableFilter(e.target.value)}
@@ -652,16 +872,41 @@ const CuttingJobsCRUD = () => {
                         </select>
                     </div>
 
-                    {/* Кнопка очищення фільтрів */}
                     <div className="filter-item">
-                        <button
-                            onClick={clearAllFilters}
-                            className="filters-clear-btn"
-                            title="Очистити всі фільтри"
+                        <label>Потреба в розкрої:</label>
+                        <select
+                            value={cuttingNeedFilter}
+                            onChange={(e) => setCuttingNeedFilter(e.target.value)}
                         >
-                            Очистити фільтри
-                        </button>
+                            <option value="">Всі</option>
+                            <option value="yes">Потрібно</option>
+                            <option value="no">Не потрібно</option>
+                        </select>
                     </div>
+                </div>
+
+                <div className="filters-row filters-row-second">
+                    <div className="filter-item filter-checkbox">
+                        <label className="checkbox-label">
+                            <input
+                                type="checkbox"
+                                checked={showAllJobs}
+                                onChange={(e) => setShowAllJobs(e.target.checked)}
+                            />
+                            <h3>Показувати виконані завдання</h3>
+                        </label>
+                    </div>
+
+
+                </div>
+                <div className="filter-item">
+                    <button
+                        onClick={clearAllFilters}
+                        className="filters-clear-btn"
+                        title="Очистити всі фільтри"
+                    >
+                        Очистити фільтри
+                    </button>
                 </div>
             </div>
 
@@ -669,9 +914,16 @@ const CuttingJobsCRUD = () => {
             <div className="tasks-controls">
                 <div className="tasks-count">
                     Знайдено: {totalItems} завдань
-                    {jobIdFromUrl && (<span className="url-job-notice">
-                    (Відкрито завдання з URL: #{jobIdFromUrl})
-                </span>)}
+                    {!showAllJobs && (
+                        <span className="completed-hidden-notice">
+                            (виконані завдання приховані)
+                        </span>
+                    )}
+                    {jobIdFromUrl && (
+                        <span className="url-job-notice">
+                            (Відкрито завдання з URL: #{jobIdFromUrl})
+                        </span>
+                    )}
                 </div>
 
                 <div className="page-size-selector">
@@ -692,26 +944,29 @@ const CuttingJobsCRUD = () => {
             </div>
 
             {/* Форма створення/редагування */}
-            {showForm && (<div className="modal-overlay">
+            {showForm && (
+                <div className="modal-overlay">
                     <div className="modal-form">
                         <h2>{editingJob ? 'Редагувати Завдання' : 'Створити Нове Завдання'}</h2>
                         <form onSubmit={editingJob ? updateJob : createJob}>
-                            {editingJob && (<div className="form-field">
+                            {editingJob && (
+                                <div className="form-field">
                                     <label>Дата створення:</label>
                                     <div className="readonly-date">
                                         {formatDate(editingJob.creation_date)}
                                     </div>
-                                </div>)}
+                                </div>
+                            )}
 
-                            <div className="form-field">
-                                <label>Термін виконання:</label>
-                                <input
-                                    type="date"
-                                    value={formData.due_date}
-                                    onChange={(e) => setFormData({...formData, due_date: e.target.value})}
-                                    required
-                                />
-                            </div>
+                            {/*<div className="form-field">*/}
+                            {/*    <label>Термін виконання:</label>*/}
+                            {/*    <input*/}
+                            {/*        type="date"*/}
+                            {/*        value={formData.due_date}*/}
+                            {/*        onChange={(e) => setFormData({...formData, due_date: e.target.value})}*/}
+                            {/*        required*/}
+                            {/*    />*/}
+                            {/*</div>*/}
 
                             <div className="form-field">
                                 <label>Статус:</label>
@@ -722,24 +977,54 @@ const CuttingJobsCRUD = () => {
                                 >
                                     <option value="В черзі">В черзі</option>
                                     <option value="В роботі">В роботі</option>
+                                    <option value="Частково виконано">Частково виконано</option>
                                     <option value="Виконано">Виконано</option>
                                     <option value="Скасовано">Скасовано</option>
                                 </select>
                             </div>
 
-                            {/* Нова галочка для наявності металу */}
+                            <div className="form-field">
+                                <label>Пріоритет:</label>
+                                <select
+                                    value={formData.priority}
+                                    onChange={(e) => setFormData({...formData, priority: parseInt(e.target.value)})}
+                                    required
+                                >
+                                    <option value="1">1 - Срочно</option>
+                                    <option value="2">2 - Високий</option>
+                                    <option value="3">3 - Середній</option>
+                                    <option value="4">4 - Низький</option>
+                                    <option value="5">5 - Мінімальний</option>
+                                </select>
+                            </div>
+
                             <div className="form-field checkbox-field">
                                 <label className="checkbox-label">
                                     <input
                                         type="checkbox"
                                         checked={formData.metal_available}
                                         onChange={(e) => setFormData({...formData, metal_available: e.target.checked})}
-                                        disabled={editingJob?.status === 'Виконано'} // Додаємо disabled для виконаних завдань
+                                        disabled={editingJob?.status === 'Виконано'}
                                     />
-                                    <span className="checkbox-custom"></span>
                                     Метал в наявності
                                     {editingJob?.status === 'Виконано' && (
-                                        <span className="disabled-hint">(недоступно для виконаних завдань)</span>)}
+                                        <span className="disabled-hint">(недоступно для виконаних завдань)</span>
+                                    )}
+                                </label>
+                            </div>
+
+                            <div className="form-field checkbox-field">
+                                <label className="checkbox-label">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.cutting_need}
+                                        onChange={(e) => setFormData({...formData, cutting_need: e.target.checked})}
+                                        disabled={editingJob?.status === 'Виконано'}
+                                    />
+                                    Потреба в розкрої
+                                    {editingJob?.status === 'Виконано' && (
+                                        <span className="disabled-hint">(недоступно для виконаних завдань)</span>
+                                    )}
                                 </label>
                             </div>
 
@@ -763,15 +1048,52 @@ const CuttingJobsCRUD = () => {
                             </div>
                         </form>
                     </div>
-                </div>)}
+                </div>
+            )}
 
-            {/* Мобільні карточки (показуються тільки на мобільних) */}
+            {/* Мобільні карточки */}
             <div className="mobile-tasks-list">
-                {currentJobs.map(job => (<div key={job.job_id} className="mobile-task-card">
+                {currentJobs.map(job => (
+                    <div key={job.job_id} className="mobile-task-card">
                         <div className="mobile-task-header">
                             <div className="mobile-task-id">#{job.job_id}</div>
-                            <div
-                                className={`mobile-task-status mobile-task-status-${(job.status || '').replace(/\s+/g, '').toLowerCase()}`}>
+                            <div className="mobile-task-priority">
+                                <div className="priority-cell">
+                                    {job.status === 'Виконано' ? (
+                                        <div className="priority-disabled-mobile" title="Для виконаного завдання не відображається">
+                                            —
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {prioritySelectJobId === job.job_id ? (
+                                                <select
+                                                    value={job.priority}
+                                                    onChange={(e) => handlePriorityChange(job.job_id, parseInt(e.target.value))}
+                                                    className="priority-select-mobile"
+                                                    autoFocus
+                                                    onBlur={() => setPrioritySelectJobId(null)}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <option value="1">1 - Срочно</option>
+                                                    <option value="2">2 - Високий</option>
+                                                    <option value="3">3 - Середній</option>
+                                                    <option value="4">4 - Низький</option>
+                                                    <option value="5">5 - Мінімальний</option>
+                                                </select>
+                                            ) : (
+                                                <button
+                                                    className={`priority-btn priority-${job.priority}`}
+                                                    onClick={(e) => handlePriorityClick(job.job_id, e)}
+                                                    title="Натисніть для зміни пріоритету"
+                                                >
+                                                    {getPriorityName(job.priority)}
+                                                </button>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                            <div className={`mobile-task-status mobile-task-status-${(job.status || '').replace(/\s+/g, '').toLowerCase()}`}>
                                 {job.status}
                             </div>
                         </div>
@@ -782,8 +1104,10 @@ const CuttingJobsCRUD = () => {
                                 <span className="mobile-detail-value">{formatDate(job.creation_date)}</span>
                             </div>
                             <div className="mobile-task-detail">
-                                <span className="mobile-detail-label">Термін:</span>
-                                <span className="mobile-detail-value">{job.due_date}</span>
+                                <span className="mobile-detail-label">Пріоритет:</span>
+                                <span className="mobile-detail-value">
+                                    {job.status === 'Виконано' ? '—' : getPriorityName(job.priority)}
+                                </span>
                             </div>
                             <div className="mobile-task-detail">
                                 <span className="mobile-detail-label">Файл:</span>
@@ -800,55 +1124,58 @@ const CuttingJobsCRUD = () => {
                             <div className="mobile-task-detail">
                                 <span className="mobile-detail-label">Метал:</span>
                                 <span className="mobile-detail-value">
-            {job.status === 'Виконано' ? (<span className="metal-status-completed">—</span>) : (
-                <span className={job.metal_available ? 'metal-available' : 'metal-not-available'}>
-                {job.metal_available ? 'Є' : 'Немає'}
-              </span>)}
-          </span>
+                                    {job.status === 'Виконано' ? (
+                                        <span className="metal-status-completed">—</span>
+                                    ) : (
+                                        <span className={job.metal_available ? 'metal-available' : 'metal-not-available'}>
+                                            {job.metal_available ? 'Є' : 'Немає'}
+                                        </span>
+                                    )}
+                                </span>
+                            </div>
+                            <div className="mobile-task-detail">
+                                <span className="mobile-detail-label">Розкрій:</span>
+                                <span className="mobile-detail-value">
+                                    {job.status === 'Виконано' ? (
+                                        <span className="cutting-need-status-completed">—</span>
+                                    ) : (
+                                        <span className={job.cutting_need ? 'cutting-need-yes' : 'cutting-need-no'}>
+                                            {job.cutting_need ? 'Потрібно' : 'Не потрібно'}
+                                        </span>
+                                    )}
+                                </span>
                             </div>
                         </div>
 
-                        {job.notes && (<div className="mobile-task-notes">
+                        {job.notes && (
+                            <div className="mobile-task-notes">
                                 <strong>Нотатки:</strong> {job.notes}
-                            </div>)}
+                            </div>
+                        )}
 
                         <div className="mobile-task-actions">
-                            <button
-                                onClick={() => startEdit(job)}
-                                className="mobile-action-btn"
-                            >
+                            <button onClick={() => startEdit(job)} className="mobile-action-btn">
                                 ✏️ Редагувати
                             </button>
-                            <button
-                                onClick={() => deleteJob(job.job_id)}
-                                className="mobile-action-btn"
-                            >
+                            <button onClick={() => deleteJob(job.job_id)} className="mobile-action-btn">
                                 🗑️ Видалити
                             </button>
-                            <button
-                                onClick={() => toggleJobDetails(job.job_id)}
-                                className="mobile-action-btn"
-                            >
+                            <button onClick={() => toggleJobDetails(job.job_id)} className="mobile-action-btn">
                                 {selectedJobDetails === job.job_id ? '▲ Деталі' : '▼ Деталі'}
                             </button>
-                            <button
-                                onClick={() => copyJobLink(job.job_id)}
-                                className="mobile-action-btn"
-                            >
+                            <button onClick={() => copyJobLink(job.job_id)} className="mobile-action-btn">
                                 🔗 Посилання
                             </button>
-                            <button
-                                onClick={() => {
-                                    window.location.href = window.location.origin + '/cutting-log-app/#' + '/operator/' + job.job_id;
-                                }}
-                                className="mobile-action-btn primary"
-                            >
+                            <button onClick={() => {
+                                window.location.href = window.location.origin + '/cutting-log-app/#' + '/operator/' + job.job_id;
+                            }} className="mobile-action-btn primary">
                                 📒 Виконання
                             </button>
                         </div>
 
                         {/* Деталі завдання для мобільних */}
-                        {selectedJobDetails === job.job_id && (<div className="task-details-panel">
+                        {selectedJobDetails === job.job_id && (
+                            <div className="task-details-panel">
                                 <div className="details-header">
                                     <h4>Артикули в завданні #{job.job_id}</h4>
                                     <div className="details-search">
@@ -873,7 +1200,8 @@ const CuttingJobsCRUD = () => {
                                         {filteredArticles.map(article => (
                                             <option key={article.article_id} value={article.article_id}>
                                                 {article.article_num + " " + article.name} ({article.thickness}, {article.material_type})
-                                            </option>))}
+                                            </option>
+                                        ))}
                                     </select>
                                     <span>Кількість:</span>
                                     <input
@@ -896,14 +1224,14 @@ const CuttingJobsCRUD = () => {
                                 <div className="articles-list">
                                     {jobDetails
                                         .filter(detail => detail.job_id === job.job_id)
-                                        .map(detail => (<div key={detail.job_detail_id} className="article-item">
+                                        .map(detail => (
+                                            <div key={detail.job_detail_id} className="article-item">
                                                 <div className="article-info">
                                                     <span className="article-specs">{detail.articles?.name}</span>
-                                                    <span
-                                                        className="article-number">{detail.articles?.article_num}</span>
+                                                    <span className="article-number">{detail.articles?.article_num}</span>
                                                     <span className="article-specs">
-                      {"Лист " + detail.articles?.thickness + " мм"}, {"Сталь " + detail.articles?.material_type}
-                    </span>
+                                                        {"Лист " + detail.articles?.thickness + " мм"}, {"Сталь " + detail.articles?.material_type}
+                                                    </span>
                                                 </div>
                                                 <div className="article-quantity">
                                                     <span>Кількість:</span>
@@ -928,13 +1256,17 @@ const CuttingJobsCRUD = () => {
                                                 >
                                                     Видалити
                                                 </button>
-                                            </div>))}
+                                            </div>
+                                        ))}
 
                                     {jobDetails.filter(detail => detail.job_id === job.job_id).length === 0 && (
-                                        <div className="no-articles-message">Немає доданих артикулів</div>)}
+                                        <div className="no-articles-message">Немає доданих артикулів</div>
+                                    )}
                                 </div>
-                            </div>)}
-                    </div>))}
+                            </div>
+                        )}
+                    </div>
+                ))}
             </div>
 
             {/* Таблиця завдань */}
@@ -946,10 +1278,10 @@ const CuttingJobsCRUD = () => {
                             ID {getSortIcon('job_id')}
                         </th>
                         <th onClick={() => handleSort('creation_date')} className="sortable-header">
-                            Дата Створення {getSortIcon('creation_date')}
+                            Дата <br/> Створення {getSortIcon('creation_date')}
                         </th>
-                        <th onClick={() => handleSort('due_date')} className="sortable-header">
-                            Термін Виконання {getSortIcon('due_date')}
+                        <th onClick={() => handleSort('priority')} className="sortable-header">
+                            Пріоритет {getSortIcon('priority')}
                         </th>
                         <th onClick={() => handleSort('status')} className="sortable-header">
                             Статус {getSortIcon('status')}
@@ -960,25 +1292,71 @@ const CuttingJobsCRUD = () => {
                         <th onClick={() => handleSort('metal_available')} className="sortable-header">
                             Метал {getSortIcon('metal_available')}
                         </th>
+                        <th onClick={() => handleSort('cutting_need')} className="sortable-header">
+                            Розкрій <br/> на замовлення {getSortIcon('cutting_need')}
+                        </th>
                         <th>Нотатки</th>
                         <th>Дії</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {currentJobs.map(job => (<React.Fragment key={job.job_id}>
+                    {currentJobs.map(job => (
+                        <React.Fragment key={job.job_id}>
                             <tr
                                 id={`job-${job.job_id}`}
                                 className={selectedJobDetails === job.job_id ? 'task-row-selected' : 'task-row'}
-                                onClick={() => toggleJobDetails(job.job_id)}
+                                onClick={(e) => {
+                                    if (!e.target.closest('.priority-cell')) {
+                                        toggleJobDetails(job.job_id);
+                                    }
+                                }}
                             >
                                 <td className="task-id">{job.job_id}</td>
                                 <td className="task-created">{formatDate(job.creation_date)}</td>
-                                <td className="task-due">{job.due_date}</td>
+                                <td className="task-priority">
+                                    <div className="priority-cell">
+                                        {job.status === 'Виконано' ? (
+                                            <div className="priority-disabled" title="Для виконаного завдання не відображається">
+                                                —
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                {prioritySelectJobId === job.job_id ? (
+                                                    <select
+                                                        value={job.priority}
+                                                        onChange={(e) => handlePriorityChange(job.job_id, parseInt(e.target.value))}
+                                                        className="priority-select"
+                                                        autoFocus
+                                                        onBlur={() => setPrioritySelectJobId(null)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Escape') {
+                                                                setPrioritySelectJobId(null);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <option value="1">1 - Срочно</option>
+                                                        <option value="2">2 - Високий</option>
+                                                        <option value="3">3 - Середній</option>
+                                                        <option value="4">4 - Низький</option>
+                                                        <option value="5">5 - Мінімальний</option>
+                                                    </select>
+                                                ) : (
+                                                    <button
+                                                        className={`priority-btn priority-${job.priority}`}
+                                                        onClick={(e) => handlePriorityClick(job.job_id, e)}
+                                                        title="Натисніть для зміни пріоритету"
+                                                    >
+                                                        {job.priority} - {getPriorityName(job.priority)}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </td>
                                 <td>
-                            <span
-                                className={`task-status task-status-${(job.status || '').replace(/\s+/g, '').toLowerCase()}`}>
-                                {job.status}
-                            </span>
+                                    <span className={`task-status task-status-${(job.status || '').replace(/\s+/g, '').toLowerCase()}`}>
+                                        {job.status}
+                                    </span>
                                 </td>
                                 <td className="task-file">
                                     {getJobFileName(job.job_id)}
@@ -990,10 +1368,12 @@ const CuttingJobsCRUD = () => {
                                     {getJobMaterials(job.job_id)}
                                 </td>
                                 <td className="task-metal">
-                                    {job.status === 'Виконано' ? (<div className="metal-status-completed"
-                                                                       title="Для виконаного завдання не відображається">
+                                    {job.status === 'Виконано' ? (
+                                        <div className="metal-status-completed" title="Для виконаного завдання не відображається">
                                             —
-                                        </div>) : (<div
+                                        </div>
+                                    ) : (
+                                        <div
                                             className={`metal-status ${job.metal_available ? 'metal-available' : 'metal-not-available'}`}
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -1003,9 +1383,31 @@ const CuttingJobsCRUD = () => {
                                         >
                                             {job.metal_available ? '✅' : '❌'}
                                             <span className="metal-status-text">
-                {job.metal_available ? 'Є' : 'Немає'}
-            </span>
-                                        </div>)}
+                                                {job.metal_available ? 'Є' : 'Немає'}
+                                            </span>
+                                        </div>
+                                    )}
+                                </td>
+                                <td className="task-cutting-need">
+                                    {job.status === 'Виконано' ? (
+                                        <div className="cutting-need-status-completed" title="Для виконаного завдання не відображається">
+                                            —
+                                        </div>
+                                    ) : (
+                                        <div
+                                            className={`cutting-need-status ${job.cutting_need ? 'cutting-need-yes' : 'cutting-need-no'}`}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleCuttingNeed(job.job_id, job.cutting_need);
+                                            }}
+                                            title={job.cutting_need ? "Потреба в розкрої активна (натисніть щоб змінити)" : "Потреба в розкрої неактивна (натисніть щоб змінити)"}
+                                        >
+                                            {job.cutting_need ? '✂️' : '⛔'}
+                                            <span className="cutting-need-text">
+                                                {job.cutting_need ? '+' : '-'}
+                                            </span>
+                                        </div>
+                                    )}
                                 </td>
                                 <td className="task-notes">
                                     {job.notes?.substring(0, 50) + (job.notes?.length > 50 ? '...' : '') || '—'}
@@ -1058,13 +1460,12 @@ const CuttingJobsCRUD = () => {
                             </tr>
 
                             {/* Деталі завдання (артикули) */}
-                            {selectedJobDetails === job.job_id && (<tr className="task-details-row">
-                                    <td colSpan="10">
+                            {selectedJobDetails === job.job_id && (
+                                <tr className="task-details-row">
+                                    <td colSpan="11">
                                         <div className="task-details-panel">
                                             <div className="details-header">
                                                 <h4>Артикули в завданні #{job.job_id}</h4>
-
-                                                {/* Пошук в артикулах */}
                                                 <div className="details-search">
                                                     <input
                                                         type="text"
@@ -1076,7 +1477,6 @@ const CuttingJobsCRUD = () => {
                                                 </div>
                                             </div>
 
-                                            {/* Форма додавання артикулу */}
                                             <div className="article-add-form">
                                                 <select
                                                     value={jobDetailForm.article_id}
@@ -1088,7 +1488,8 @@ const CuttingJobsCRUD = () => {
                                                     {filteredArticles.map(article => (
                                                         <option key={article.article_id} value={article.article_id}>
                                                             {article.article_num + " " + article.name} ({article.thickness}, {article.material_type})
-                                                        </option>))}
+                                                        </option>
+                                                    ))}
                                                 </select>
                                                 <span>Кількість:</span>
                                                 <input
@@ -1101,7 +1502,6 @@ const CuttingJobsCRUD = () => {
                                                     })}
                                                     placeholder="Кількість"
                                                 />
-
                                                 <button
                                                     onClick={() => addArticleToJob(job.job_id)}
                                                     className="article-add-btn"
@@ -1110,7 +1510,6 @@ const CuttingJobsCRUD = () => {
                                                 </button>
                                             </div>
 
-                                            {/* Список артикулів завдання */}
                                             <div className="articles-list">
                                                 {jobDetails
                                                     .filter(detail => detail.job_id === job.job_id)
@@ -1118,14 +1517,14 @@ const CuttingJobsCRUD = () => {
                                                         <div key={detail.job_detail_id} className="article-item">
                                                             <div className="article-info">
                                                                 <span className="article-specs">
-                                                            {detail.articles?.name}
-                                                        </span>
+                                                                    {detail.articles?.name}
+                                                                </span>
                                                                 <span className="article-number">
-                                                            {detail.articles?.article_num}
-                                                        </span>
+                                                                    {detail.articles?.article_num}
+                                                                </span>
                                                                 <span className="article-specs">
-                                                            {"Лист " + detail.articles?.thickness + " мм"}, {"Сталь " + detail.articles?.material_type}
-                                                        </span>
+                                                                    {"Лист " + detail.articles?.thickness + " мм"}, {"Сталь " + detail.articles?.material_type}
+                                                                </span>
                                                             </div>
                                                             <div className="article-quantity">
                                                                 <span>Кількість:</span>
@@ -1155,23 +1554,28 @@ const CuttingJobsCRUD = () => {
                                                             >
                                                                 Видалити
                                                             </button>
-                                                        </div>))}
+                                                        </div>
+                                                    ))}
 
                                                 {jobDetails.filter(detail => detail.job_id === job.job_id).length === 0 && (
                                                     <div className="no-articles-message">
                                                         Немає доданих артикулів
-                                                    </div>)}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </td>
-                                </tr>)}
-                        </React.Fragment>))}
+                                </tr>
+                            )}
+                        </React.Fragment>
+                    ))}
                     </tbody>
                 </table>
             </div>
 
             {/* Пагінація */}
-            {totalPages > 1 && (<div className="tasks-pagination">
+            {totalPages > 1 && (
+                <div className="tasks-pagination">
                     <div className="pagination-info">
                         Сторінка {currentPage} з {totalPages} •
                         Показано {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, totalItems)} з {totalItems} завдань
@@ -1186,13 +1590,15 @@ const CuttingJobsCRUD = () => {
                             ← Попередня
                         </button>
 
-                        {getPageNumbers().map(page => (<button
+                        {getPageNumbers().map(page => (
+                            <button
                                 key={page}
                                 onClick={() => goToPage(page)}
                                 className={`pagination-btn ${currentPage === page ? 'pagination-active' : ''}`}
                             >
                                 {page}
-                            </button>))}
+                            </button>
+                        ))}
 
                         <button
                             onClick={goToNextPage}
@@ -1202,8 +1608,10 @@ const CuttingJobsCRUD = () => {
                             Наступна →
                         </button>
                     </div>
-                </div>)}
-        </div>);
+                </div>
+            )}
+        </div>
+    );
 };
 
 export default CuttingJobsCRUD;

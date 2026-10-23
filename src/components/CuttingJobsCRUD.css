@@ -1,11 +1,13 @@
 /* Основний контейнер */
 .cutting-tasks-management {
     max-width: 100%;
+    width: 100%;
     margin: 0 auto;
     padding: 12px;
     background: #F0F8FF;
     min-height: 100vh;
     font-family: 'Segoe UI', system-ui, sans-serif;
+    border-radius: 15px;
 }
 
 /* Заголовок */
@@ -99,6 +101,7 @@
     height: 36px;
     white-space: nowrap;
     align-self: end;
+    margin-top: 15px;
 }
 
 .filters-clear-btn:hover {
@@ -654,7 +657,7 @@
 .form-field input,
 .form-field select,
 .form-field textarea {
-    width: 100%;
+    width: 90%;
     padding: 8px 12px;
     border: 1px solid #cbd5e1;
     border-radius: 4px;
@@ -1070,7 +1073,7 @@
     z-index: 5;
     /*position: absolute;*/
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    max-width: 300px;
+    /*max-width: 300px;*/
     /*width: 100%;*/
 }
 
@@ -1079,3 +1082,492 @@
     margin-left: 4px;
     font-size: 10px;
 }
+
+/* Стилі для пріоритетів */
+.priority-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    min-width: 120px;
+    color: white;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.priority-1 {
+    background: linear-gradient(135deg, #ff0000, #cc0000);
+    border: 1px solid #aa0000;
+}
+
+.priority-2 {
+    background: linear-gradient(135deg, #ff6b6b, #ff4444);
+    border: 1px solid #e63939;
+}
+
+.priority-3 {
+    background: linear-gradient(135deg, #ffa500, #ff8800);
+    border: 1px solid #e67e00;
+}
+
+.priority-4 {
+    background: linear-gradient(135deg, #4caf50, #45a049);
+    border: 1px solid #3d8b40;
+}
+
+.priority-5 {
+    background: linear-gradient(135deg, #808080, #666666);
+    border: 1px solid #555555;
+}
+
+/* Для мобільних карточок */
+.mobile-task-card .priority-badge {
+    padding: 3px 8px;
+    font-size: 11px;
+    min-width: 30px;
+}
+
+/* Стилі для пріоритету в таблиці */
+.task-due .priority-badge {
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.task-due .priority-badge:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
+/* Стилі для пріоритетів */
+.priority-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    min-width: 100px;
+    color: white;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-left: 8px;
+}
+
+.priority-1 {
+    background: linear-gradient(135deg, #ff0000, #cc0000);
+    border: 1px solid #aa0000;
+}
+
+.priority-2 {
+    background: linear-gradient(135deg, #ff6b6b, #ff4444);
+    border: 1px solid #e63939;
+}
+
+.priority-3 {
+    background: linear-gradient(135deg, #ffa500, #ff8800);
+    border: 1px solid #e67e00;
+}
+
+.priority-4 {
+    background: linear-gradient(135deg, #4caf50, #45a049);
+    border: 1px solid #3d8b40;
+}
+
+.priority-5 {
+    background: linear-gradient(135deg, #808080, #666666);
+    border: 1px solid #555555;
+}
+
+/* Стилі для select пріоритету в таблиці */
+.priority-select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.priority-select {
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    font-size: 12px;
+    min-width: 140px;
+    cursor: pointer;
+}
+
+.priority-select:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.priority-select:hover {
+    border-color: #bbb;
+}
+
+/* Стилі для мобільних версій */
+.priority-select-mobile {
+    padding: 4px 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    font-size: 11px;
+    width: 100%;
+    max-width: 120px;
+}
+
+/* Для мобільних карточок */
+.mobile-task-card .priority-badge {
+    padding: 3px 8px;
+    font-size: 11px;
+    min-width: 80px;
+    margin-left: 0;
+}
+
+/* Стилі для кнопки пріоритету */
+.priority-cell {
+    position: relative;
+    display: inline-block;
+}
+
+.priority-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    min-width: 120px;
+    text-align: center;
+    display: inline-block;
+}
+
+.priority-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.priority-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Кольори для пріоритетів */
+.priority-btn.priority-1 {
+    background: linear-gradient(135deg, #ff0000, #cc0000);
+}
+
+.priority-btn.priority-2 {
+    background: linear-gradient(135deg, #ff6b6b, #ff4444);
+}
+
+.priority-btn.priority-3 {
+    background: linear-gradient(135deg, #ffa500, #ff8800);
+}
+
+.priority-btn.priority-4 {
+    background: linear-gradient(135deg, #4caf50, #45a049);
+}
+
+.priority-btn.priority-5 {
+    background: linear-gradient(135deg, #808080, #666666);
+}
+
+/* Стилі для select пріоритету */
+.priority-select {
+    padding: 6px 12px;
+    border: 2px solid #4CAF50;
+    border-radius: 20px;
+    background-color: white;
+    font-size: 12px;
+    font-weight: bold;
+    min-width: 120px;
+    cursor: pointer;
+    outline: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    animation: slideDown 0.2s ease;
+    position: relative;
+    z-index: 10;
+}
+
+.priority-select:focus {
+    border-color: #2E7D32;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Для мобільних пристроїв */
+.priority-select-mobile {
+    padding: 4px 8px;
+    border: 2px solid #4CAF50;
+    border-radius: 15px;
+    background-color: white;
+    font-size: 11px;
+    font-weight: bold;
+    width: 100%;
+    max-width: 130px;
+    cursor: pointer;
+    outline: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.mobile-task-card .priority-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+    min-width: 100px;
+    border-radius: 15px;
+}
+
+/* Анімація для селекта на мобільних */
+.mobile-task-card .priority-select-mobile {
+    animation: slideDownMobile 0.2s ease;
+}
+
+@keyframes slideDownMobile {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Стилі для кнопки пріоритету */
+.priority-cell {
+    position: relative;
+    display: inline-block;
+}
+
+.priority-btn {
+    padding: 8px 10px;
+    border: none;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    min-width: 120px;
+    text-align: center;
+    display: inline-block;
+}
+
+.priority-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.priority-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Кольори для пріоритетів */
+.priority-btn.priority-1 {
+    background: linear-gradient(135deg, #ff0000, #cc0000);
+}
+
+.priority-btn.priority-2 {
+    background: linear-gradient(135deg, #ff6b6b, #ff4444);
+}
+
+.priority-btn.priority-3 {
+    background: linear-gradient(135deg, #ffa500, #ff8800);
+}
+
+.priority-btn.priority-4 {
+    background: linear-gradient(135deg, #4caf50, #45a049);
+}
+
+.priority-btn.priority-5 {
+    background: linear-gradient(135deg, #808080, #666666);
+}
+
+/* Стилі для select пріоритету */
+.priority-select {
+    padding: 6px 12px;
+    border: 2px solid #4CAF50;
+    border-radius: 20px;
+    background-color: white;
+    font-size: 12px;
+    font-weight: bold;
+    min-width: 120px;
+    cursor: pointer;
+    outline: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    animation: slideDown 0.2s ease;
+    position: relative;
+    z-index: 10;
+}
+
+.priority-select:focus {
+    border-color: #2E7D32;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Для мобільних пристроїв */
+.priority-select-mobile {
+    padding: 4px 8px;
+    border: 2px solid #4CAF50;
+    border-radius: 15px;
+    background-color: white;
+    font-size: 11px;
+    font-weight: bold;
+    width: 100%;
+    max-width: 130px;
+    cursor: pointer;
+    outline: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.mobile-task-card .priority-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+    min-width: 100px;
+    border-radius: 15px;
+}
+
+/* Анімація для селекта на мобільних */
+.mobile-task-card .priority-select-mobile {
+    animation: slideDownMobile 0.2s ease;
+}
+
+@keyframes slideDownMobile {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Стилі для статусу потреби в розкрої */
+.cutting-need-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.cutting-need-status:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+
+.cutting-need-yes {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+.cutting-need-no {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+.cutting-need-text {
+    margin-left: 4px;
+}
+
+.cutting-need-status-completed {
+    color: #999;
+    font-style: italic;
+}
+
+/* Стилі для мобільних версій */
+.mobile-task-card .cutting-need-yes,
+.mobile-task-card .cutting-need-no {
+    padding: 2px 6px;
+    font-size: 11px;
+}
+
+/* Для таблиці */
+.task-cutting-need {
+    text-align: center;
+}
+
+/* Стилі для статусу "Частково виконано" */
+.task-status-часткововиконано {
+    background-color: #ff9800 !important;
+    color: white !important;
+}
+
+/* Для мобільної версії */
+.mobile-task-status-часткововиконано {
+    background-color: #ff9800 !important;
+    color: white !important;
+}
+
+/* Стилі для статусу "Частково виконано" */
+.task-status-часткововиконано {
+    background-color: #ff9800 !important;
+    color: white !important;
+}
+
+.mobile-task-status-часткововиконано {
+    background-color: #ff9800 !important;
+    color: white !important;
+}
+
+/* Стиль для вимкненого пріоритету */
+.priority-disabled {
+    color: #999;
+    font-style: italic;
+    padding: 6px 12px;
+    text-align: center;
+    min-width: 120px;
+    background-color: #f5f5f5;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.priority-disabled-mobile {
+    color: #999;
+    font-style: italic;
+    padding: 4px 10px;
+    text-align: center;
+    min-width: 100px;
+    background-color: #f5f5f5;
+    border-radius: 15px;
+    display: inline-block;
+    font-size: 11px;
+}
+

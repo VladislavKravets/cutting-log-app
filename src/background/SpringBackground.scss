@@ -1,0 +1,417 @@
+/* SpringBackground.scss */
+
+/* --- Переменные --- */
+$text-color: #2c5a2c;
+$butterfly-color: #ffd700;
+
+/* --- Глобальные стили --- */
+.spring-background-wrapper {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  background: linear-gradient(
+                  to bottom,
+                  #87CEEB,
+                  #98D8C8,
+                  #C8E6B5,
+                  #FFE4C4
+  );
+}
+
+/* --- Плавные анимации для бабочек (постоянный полет) --- */
+@keyframes butterflyFlyLoop1 {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(15vw, -20vh) rotate(15deg);
+  }
+  50% {
+    transform: translate(30vw, 10vh) rotate(-10deg);
+  }
+  75% {
+    transform: translate(45vw, -15vh) rotate(20deg);
+  }
+  100% {
+    transform: translate(60vw, 5vh) rotate(5deg);
+  }
+}
+
+@keyframes butterflyFlyLoop2 {
+  0% {
+    transform: translate(100vw, 20vh) rotate(0deg);
+  }
+  25% {
+    transform: translate(80vw, -10vh) rotate(-15deg);
+  }
+  50% {
+    transform: translate(60vw, 30vh) rotate(10deg);
+  }
+  75% {
+    transform: translate(40vw, 5vh) rotate(-20deg);
+  }
+  100% {
+    transform: translate(20vw, 15vh) rotate(5deg);
+  }
+}
+
+@keyframes butterflyFlyLoop3 {
+  0% {
+    transform: translate(0, 60vh) rotate(-5deg);
+  }
+  33% {
+    transform: translate(33vw, 30vh) rotate(20deg);
+  }
+  66% {
+    transform: translate(66vw, 45vh) rotate(-15deg);
+  }
+  100% {
+    transform: translate(100vw, 20vh) rotate(10deg);
+  }
+}
+
+@keyframes butterflyFlyLoop4 {
+  0% {
+    transform: translate(100vw, 70vh) rotate(10deg);
+  }
+  33% {
+    transform: translate(70vw, 50vh) rotate(-20deg);
+  }
+  66% {
+    transform: translate(40vw, 80vh) rotate(15deg);
+  }
+  100% {
+    transform: translate(10vw, 60vh) rotate(-5deg);
+  }
+}
+
+@keyframes butterflyFlyLoop5 {
+  0% {
+    transform: translate(20vw, 90vh) rotate(5deg);
+  }
+  25% {
+    transform: translate(40vw, 70vh) rotate(-15deg);
+  }
+  50% {
+    transform: translate(60vw, 85vh) rotate(25deg);
+  }
+  75% {
+    transform: translate(80vw, 65vh) rotate(-10deg);
+  }
+  100% {
+    transform: translate(95vw, 80vh) rotate(0deg);
+  }
+}
+
+@keyframes butterflyWing {
+  0%, 100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(0.6);
+  }
+}
+
+.butterfly {
+  position: absolute;
+  font-size: 32px;
+  user-select: none;
+  pointer-events: none;
+  filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+  z-index: 2;
+  will-change: transform;
+  display: inline-block;
+  animation-duration: 20s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-fill-mode: forwards;
+}
+
+.butterfly span {
+  display: inline-block;
+  animation: butterflyWing 0.3s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* Разные анимации для каждой бабочки */
+.butterfly:nth-child(1) { animation-name: butterflyFlyLoop1; animation-duration: 25s; }
+.butterfly:nth-child(2) { animation-name: butterflyFlyLoop2; animation-duration: 28s; }
+.butterfly:nth-child(3) { animation-name: butterflyFlyLoop3; animation-duration: 22s; }
+.butterfly:nth-child(4) { animation-name: butterflyFlyLoop4; animation-duration: 30s; }
+.butterfly:nth-child(5) { animation-name: butterflyFlyLoop5; animation-duration: 26s; }
+.butterfly:nth-child(6) { animation-name: butterflyFlyLoop1; animation-duration: 24s; animation-delay: -5s; }
+.butterfly:nth-child(7) { animation-name: butterflyFlyLoop2; animation-duration: 29s; animation-delay: -8s; }
+.butterfly:nth-child(8) { animation-name: butterflyFlyLoop3; animation-duration: 23s; animation-delay: -3s; }
+.butterfly:nth-child(9) { animation-name: butterflyFlyLoop4; animation-duration: 27s; animation-delay: -10s; }
+.butterfly:nth-child(10) { animation-name: butterflyFlyLoop5; animation-duration: 31s; animation-delay: -6s; }
+.butterfly:nth-child(11) { animation-name: butterflyFlyLoop1; animation-duration: 26s; animation-delay: -12s; }
+.butterfly:nth-child(12) { animation-name: butterflyFlyLoop2; animation-duration: 32s; animation-delay: -2s; }
+
+/* --- Плавные анимации для облаков --- */
+@keyframes cloudFloat {
+  0% {
+    transform: translateX(-200px);
+  }
+  100% {
+    transform: translateX(calc(100vw + 200px));
+  }
+}
+
+.cloud {
+  position: absolute;
+  font-size: 60px;
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 1;
+  animation: cloudFloat linear infinite;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.cloud:nth-child(1) {
+  top: 30px;
+  animation-duration: 60s;
+  animation-delay: 0s;
+  font-size: 70px;
+}
+
+.cloud:nth-child(2) {
+  top: 100px;
+  animation-duration: 80s;
+  animation-delay: -20s;
+  font-size: 50px;
+}
+
+.cloud:nth-child(3) {
+  top: 160px;
+  animation-duration: 70s;
+  animation-delay: -40s;
+  font-size: 55px;
+}
+
+.cloud:nth-child(4) {
+  top: 200px;
+  animation-duration: 90s;
+  animation-delay: -10s;
+  font-size: 45px;
+}
+
+/* --- Декоративный Центральный Блок --- */
+.spring-label-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: $text-color;
+  text-transform: uppercase;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  text-align: center;
+
+  h1 {
+    margin: 0;
+    padding: 0;
+    font-size: 2rem;
+    text-shadow: 2px 2px 8px rgba(255, 255, 255, 0.8);
+    font-weight: bold;
+    letter-spacing: 2px;
+  }
+}
+
+.flower {
+  position: absolute;
+  bottom: 0;
+  font-size: 40px;
+  animation: flowerFadeInOut ease-in-out infinite;
+  filter: drop-shadow(0 0 5px rgba(255, 105, 180, 0.3));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* --- Стили для солнца --- */
+@keyframes sunGlow {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.9));
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+  }
+}
+
+.sun {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  font-size: 70px;
+  z-index: 2;
+  cursor: pointer;
+  animation: sunGlow 3s ease-in-out infinite;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+/* --- Стили для лічильника --- */
+.summer-countdown {
+  position: absolute;
+  bottom: 50px;
+  right: 80px;
+  color: $text-color;
+  text-align: center;
+  z-index: 3;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px);
+  padding: 12px 15px;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+}
+
+.countdown-title {
+  font-size: 12px;
+  margin: 0 0 10px 0;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+  font-weight: bold;
+  color: #ff69b4;
+}
+
+.countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.countdown-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.countdown-number {
+  font-size: 14px;
+  font-weight: bold;
+  color: #ff69b4;
+  text-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
+  margin-bottom: 2px;
+}
+
+.countdown-label {
+  font-size: 0.7rem;
+  text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.8);
+  opacity: 0.9;
+}
+
+/* --- Адаптивность --- */
+@media (max-width: 768px) {
+  .spring-label-container {
+    width: 80%;
+    padding: 20px;
+
+    h1 {
+      font-size: 1.2rem;
+    }
+  }
+
+  .sun {
+    font-size: 50px;
+    top: 15px;
+    right: 15px;
+  }
+
+  .summer-countdown {
+    right: 10px;
+    bottom: 10px;
+    min-width: 160px;
+    padding: 8px 10px;
+
+    .countdown-number {
+      font-size: 10px;
+    }
+
+    .countdown-label {
+      font-size: 0.6rem;
+    }
+  }
+
+  .flower {
+    font-size: 30px;
+  }
+
+  .butterfly {
+    font-size: 28px;
+  }
+
+  .cloud {
+    font-size: 40px;
+  }
+}
+
+/* Стилі для квітів з різною висотою */
+.flower {
+  position: absolute;
+  font-size: 40px;
+  animation: flowerFadeInOut ease-in-out infinite;
+  filter: drop-shadow(0 0 5px rgba(255, 105, 180, 0.3));
+  pointer-events: none;
+  z-index: 2;
+  will-change: transform, opacity;
+
+  /* Додаємо невеликий горизонтальний зсув для різноманітності */
+  &:nth-child(1) { transform: translateX(-3px); }
+  &:nth-child(2) { transform: translateX(2px); }
+  &:nth-child(3) { transform: translateX(-1px); }
+  &:nth-child(4) { transform: translateX(4px); }
+  &:nth-child(5) { transform: translateX(-2px); }
+}
+
+@keyframes flowerFadeInOut {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) translateY(15px);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  85% {
+    opacity: 0.6;
+    transform: scale(0.9) translateY(5px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.7) translateY(15px);
+  }
+}
